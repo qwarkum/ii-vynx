@@ -7,7 +7,7 @@ import QtQuick.Layouts
 Item {
     id: root
     property bool showDate: Config.options.bar.verbose
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 10
+    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 8
     implicitHeight: Appearance.sizes.barHeight
 
     RowLayout {
@@ -16,23 +16,33 @@ Item {
         spacing: 4
 
         StyledText {
-            font.pixelSize: Appearance.font.pixelSize.large
+            visible: root.showDate
             color: Appearance.colors.colOnLayer1
-            text: DateTime.time
+            text: DateTime.longDate
         }
 
         StyledText {
             visible: root.showDate
-            font.pixelSize: Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
             text: "•"
         }
 
-        StyledText {
-            visible: root.showDate
-            font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnLayer1
-            text: DateTime.longDate
+        Item {
+            implicitHeight: parent.height
+            implicitWidth: threshold.width
+            Layout.alignment: Qt.AlignVCenter
+            
+            StyledText {
+                id: timeText
+                color: Appearance.colors.colOnLayer1
+                text: DateTime.timeSeconds
+            }
+        }
+        
+        Text {
+            id: threshold
+            visible: false
+            text: Config.options.time.secondPrecision ? "00:00:00" : "00:00"
         }
     }
 

@@ -9,6 +9,7 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.ii.bar.drawers
 
 Scope {
     id: bar
@@ -31,6 +32,12 @@ Scope {
             active: GlobalStates.barOpen && !GlobalStates.screenLocked
             required property ShellScreen modelData
             property int monitorIndex: barVariant.variantModel.indexOf(modelData)
+
+            property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
+            property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
+            property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
+            property bool fullscreen: activeWorkspaceWithFullscreen != undefined
+
             component: PanelWindow { // Bar window
                 id: barRoot
                 screen: barLoader.modelData
@@ -38,6 +45,16 @@ Scope {
                 property int monitorIndex: barLoader.monitorIndex
                 property bool hasActiveWindows: false
                 property bool showBarBackground: barRoot.hasActiveWindows && Config.options.bar.barBackgroundStyle === 2 || Config.options.bar.barBackgroundStyle === 1
+
+                HyprlandFocusGrab {
+                    id: focusGrab
+
+                    active: Config.options.appearance.panelAnimation.enableBackgroundAnimation && (GlobalStates.overviewOpen)
+                    windows: [barRoot]
+                    onCleared: {
+                        GlobalStates.overviewOpen = false
+                    }
+                }
 
                 Connections {
                     enabled: Config.options.bar.barBackgroundStyle === 2
@@ -78,7 +95,7 @@ Scope {
                 exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
                     Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
                 WlrLayershell.namespace: "quickshell:bar"
-                implicitHeight: Appearance.sizes.barHeight + Appearance.rounding.screenRounding
+                implicitHeight: modelData.height //Appearance.sizes.barHeight + Appearance.rounding.screenRounding
                 mask: Region {
                     item: hoverMaskRegion
                 }
@@ -230,6 +247,30 @@ Scope {
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                Loader {
+                    anchors.fill: parent
+                    active: (DrawerVisibilityConfig.barOsdVisible || DrawerVisibilityConfig.barSearchOverviewVisible) && !barLoader.fullscreen
+                    sourceComponent: Item {
+                        clip: true
+                        anchors { 
+                            fill: parent
+                            topMargin: Appearance.sizes.barHeight - (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 1)
+                        }
+
+                        Backgrounds {
+                            id: backgrounds
+                            panels: panels
+                        }
+
+                        Panels {
+                            id: panels
+
+                            screen: barLoader.modelData
+                            visibilities: Visibilities.getForScreen(barLoader.modelData)
                         }
                     }
                 }

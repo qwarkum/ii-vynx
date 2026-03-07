@@ -287,6 +287,36 @@ ContentPage {
         ConfigRow {
             uniform: true
 
+            ConfigSwitch {
+                enabled: !Config.options.bar.vertical
+                buttonIcon: "crop_free"
+                text: Translation.tr("Use custom size")
+                checked: Config.options.bar.mediaPlayer.useCustomSize
+                onCheckedChanged: {
+                    Config.options.bar.mediaPlayer.useCustomSize = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Only available in horizontal mode")
+                }
+            }
+
+            ConfigSwitch {
+                enabled: !Config.options.bar.vertical
+                buttonIcon: "splitscreen"
+                text: "Use column layout"
+                checked: Config.options.bar.mediaPlayer.useColumnLayout
+                onCheckedChanged: {
+                    Config.options.bar.mediaPlayer.useColumnLayout = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Only available in horizontal mode")
+                }
+            }
+        }
+
+        ConfigRow {
+            uniform: true
+
             ConfigSpinBox {
                 enabled: !Config.options.bar.vertical
                 icon: "width_full"

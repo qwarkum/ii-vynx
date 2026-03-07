@@ -60,7 +60,10 @@ Item { // Bar content region
 
     // Background shadow
     Loader {
-        active: root.showBarBackground && Config.options.bar.cornerStyle === 1 && Config.options.bar.floatStyleShadow
+        z: -11
+        active: root.showBarBackground && 
+                Config.options.bar.cornerStyle === 1 &&
+                Config.options.bar.floatStyleShadow
         anchors.fill: barBackground
         sourceComponent: StyledRectangularShadow {
             anchors.fill: undefined // The loader's anchors act on this, and this should not have any anchor
@@ -73,11 +76,15 @@ Item { // Bar content region
         z: -10 // making sure its behind everything
         anchors {
             fill: parent
-            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
+            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut - 1) : 0 // idk why but +1 is needed
         }
         color: root.showBarBackground ? Appearance.colors.colLayer0 : "transparent"
-        radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
+        radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.full : 0
+        border.width: Config.options.bar.cornerStyle === 1 &&
+                      (Config.options.bar.bottom ||
+                       Config.options.bar.vertical ||
+                       !Config.options.appearance.transparency.enable ||
+                       !Config.options.appearance.panelAnimation.enableBackgroundAnimation) ? 1 : 0
         border.color: Appearance.colors.colLayer0Border
 
         Behavior on color {
@@ -85,34 +92,34 @@ Item { // Bar content region
         }
     }
 
-    FocusedScrollMouseArea { // Left side | scroll to change brightness
-        id: barLeftSideMouseArea
+    // FocusedScrollMouseArea { // Left side | scroll to change brightness
+    //     id: barLeftSideMouseArea
 
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: parent.left
-            right: middleSection.left
-        }
-        implicitHeight: Appearance.sizes.baseBarHeight
+    //     anchors {
+    //         top: parent.top
+    //         bottom: parent.bottom
+    //         left: parent.left
+    //         right: middleSection.left
+    //     }
+    //     implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness - 0.05)
-        onScrollUp: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness + 0.05)
-        onMovedAway: GlobalStates.osdBrightnessOpen = false
-        onPressed: event => {
-            if (event.button === Qt.LeftButton)
-                GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
-        }
+    //     // onScrollDown: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness - 0.05)
+    //     // onScrollUp: root.brightnessMonitor.setBrightness(root.brightnessMonitor.brightness + 0.05)
+    //     // onMovedAway: GlobalStates.osdBrightnessOpen = false
+    //     onPressed: event => {
+    //         if (event.button === Qt.LeftButton)
+    //             GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
+    //     }
 
-        ScrollHint {
-            reveal: barLeftSideMouseArea.hovered
-            icon: "light_mode"
-            tooltipText: Translation.tr("Scroll to change brightness")
-            side: "left"
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-        }
-    }
+    //     ScrollHint {
+    //         reveal: barLeftSideMouseArea.hovered
+    //         icon: "light_mode"
+    //         tooltipText: Translation.tr("Scroll to change brightness")
+    //         side: "left"
+    //         anchors.left: parent.left
+    //         anchors.verticalCenter: parent.verticalCenter
+    //     }
+    // }
     
 
     Item {
@@ -123,7 +130,6 @@ Item { // Bar content region
             left: parent.left
             leftMargin: Math.ceil(Appearance.rounding.screenRounding / 2)
         }
-        width: 1
     }
 
     RowLayout { // Left section
@@ -160,6 +166,7 @@ Item { // Bar content region
                 right: centerCenter.left
                 rightMargin: 4
             }
+            spacing: 4
             Repeater {
                 id: middleLeftRepeater
                 model: root.leftList
@@ -178,6 +185,7 @@ Item { // Bar content region
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
             }
+            spacing: 4
             Repeater {
                 model: root.centerList
                 delegate: BarComponent {
@@ -195,6 +203,7 @@ Item { // Bar content region
                 left: centerCenter.right
                 leftMargin: 4
             }
+            spacing: 4
             Repeater {
                 id: middleRightRepeater
                 model: root.rightList
@@ -236,7 +245,7 @@ Item { // Bar content region
             bottom: parent.bottom
             right: parent.right
         }
-        width: 1
+        width: -1
     }
 
     
@@ -253,22 +262,22 @@ Item { // Bar content region
         }
         implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: Audio.decrementVolume();
-        onScrollUp: Audio.incrementVolume();
-        onMovedAway: GlobalStates.osdVolumeOpen = false;
+        // onScrollDown: Audio.decrementVolume();
+        // onScrollUp: Audio.incrementVolume();
+        // onMovedAway: GlobalStates.osdVolumeOpen = false;
         onPressed: event => {
             if (event.button === Qt.LeftButton) {
                 GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
             }
         }
 
-        ScrollHint {
-            reveal: barRightSideMouseArea.hovered
-            icon: "volume_up"
-            tooltipText: Translation.tr("Scroll to change volume")
-            side: "right"
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-        }
+        // ScrollHint {
+        //     reveal: barRightSideMouseArea.hovered
+        //     icon: "volume_up"
+        //     tooltipText: Translation.tr("Scroll to change volume")
+        //     side: "right"
+        //     anchors.right: parent.right
+        //     anchors.verticalCenter: parent.verticalCenter
+        // }
     }
 }

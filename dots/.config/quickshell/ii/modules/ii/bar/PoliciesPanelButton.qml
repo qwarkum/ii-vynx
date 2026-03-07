@@ -10,7 +10,7 @@ RippleButton {
     property bool showPing: false
 
     property real buttonPadding: 5
-    implicitWidth: distroIcon.width + buttonPadding * 2
+    implicitWidth: distroIcon.width + buttonPadding * 3
     implicitHeight: distroIcon.height + buttonPadding * 2
     buttonRadius: Appearance.rounding.full
     colBackgroundHover: Appearance.colors.colLayer1Hover
@@ -19,6 +19,8 @@ RippleButton {
     colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
     colRippleToggled: Appearance.colors.colSecondaryContainerActive
     toggled: GlobalStates.sidebarLeftOpen
+    // topRightRadius: leftSideButtonGroup.endRadius
+    // bottomRightRadius: leftSideButtonGroup.endRadius
 
     onPressed: {
         GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;

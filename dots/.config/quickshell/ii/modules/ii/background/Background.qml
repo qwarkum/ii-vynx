@@ -71,8 +71,6 @@ Variants {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
 
-        readonly property bool isScrollingLayout: GlobalStates.isScrollingLayout
-
         property var zoomLevels: {  // has to be reverted compared to background
             "in": { default: 1.04, zoomed: 1 },
             "out": { default: 1, zoomed: 1.04 }
@@ -159,7 +157,7 @@ Variants {
             id: wallpaperItem
             anchors.fill: parent
             clip: true
-            scale: showOpeningAnimation && overviewOpen && bgRoot.isScrollingLayout ? zoomedRatio : defaultRatio
+            scale: showOpeningAnimation && overviewOpen && Config.options.overview.style === "scrolling" ? zoomedRatio : defaultRatio
             opacity: mediaModeOpen ? 0 : 1
             
             Behavior on opacity {
@@ -176,7 +174,7 @@ Variants {
                 visible: opacity > 0 && !blurLoader.active
                 opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo) ? 1 : 0
                 cache: false
-                smooth: false
+                smooth: true
                 // Range = groups that workspaces span on
                 property int chunkSize: Config?.options.bar.workspaces.shown ?? 10
                 property int lower: Math.floor(bgRoot.firstWorkspaceId / chunkSize) * chunkSize

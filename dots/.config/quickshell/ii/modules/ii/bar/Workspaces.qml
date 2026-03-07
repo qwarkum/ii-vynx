@@ -35,11 +35,8 @@ Item {
     property int individualIconBoxHeight: 22
     property int iconBoxWrapperSize: 26
     property int workspaceDotSize: 4
-    property real iconRatio: 0.8
+    property real iconRatio: 0.85
     property bool showIcons: Config.options.bar.workspaces.showAppIcons
-
-    readonly property bool isScrollingLayout: GlobalStates.isScrollingLayout
-    property int maxWindowCount: isScrollingLayout ? Config.options.bar.workspaces.maxWindowCount : 1
 
     property bool showNumbersByMs: false
     Timer {
@@ -543,6 +540,7 @@ Item {
             opacity: showNumbers ? 1 : 0
             anchors.centerIn: parent
             text: Config.options?.bar.workspaces.numberMap[workspaceValue - 1] || workspaceValue
+            font.pixelSize: Appearance.font.pixelSize.smallie
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight

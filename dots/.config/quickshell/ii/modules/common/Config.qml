@@ -139,6 +139,11 @@ Singleton {
                     property string accentColor: ""
                 }
                 property list<string> customColorSchemes: []
+                property JsonObject panelAnimation: JsonObject {
+                    property bool enableBackgroundAnimation: true
+                    property int enterDuration: 450
+                    property int exitDuration: 500
+                }
             }
 
             property JsonObject audio: JsonObject {
@@ -164,7 +169,6 @@ Singleton {
             }
 
             property JsonObject background: JsonObject {
-                property bool enable: true // if someone wants to use an external wallpaper manager, note that its not fully tested but it should just disable background.qml from being loaded
                 property JsonObject widgets: JsonObject {
                     property JsonObject clock: JsonObject {
                         property bool enable: true
@@ -288,7 +292,10 @@ Singleton {
                 property bool vertical: false
                 
                 property JsonObject mediaPlayer: JsonObject {
+                    property bool useCustomSize: false
+                    property bool useColumnLayout: true
                     property int customSize: 250
+                    property int updateInterval: 1000
                     property JsonObject lyrics: JsonObject {
                         property bool enable: true
                         property int customSize: 400
@@ -345,26 +352,95 @@ Singleton {
                     }
                 }
                 property JsonObject layouts: JsonObject {
-                    // Only adding place-essential components to left-center-right and adding the dynamic components to leftover
-                    // Not adding default values, they are initialized later
-                    // Scrolling is defined through component's id
+                    // Only adding place-essential components to left-center-right
+                    // And adding the dynamic components to leftover
                     property list<var> availableComps: [
-                        { id: "record_indicator", icon: "screen_record", title: "Record indicator", visible: false },
-                        { id: "screen_share_indicator", icon: "screen_share", title: "Screen share indicator", visible: false },
-                        { id: "date", icon: "date_range", title: "Date" },
-                        { id: "battery", icon: "battery_android_6", title: "Battery" },
-                        { id: "timer", icon: "timer", title: "Timer & Pomodoro" },
-                        { id: "weather", icon: "weather_mix", title: "Weather" },
-                        { id: "utility_buttons", icon: "build", title: "Utility buttons" }
+                        {
+                            id: "record_indicator", 
+                            icon: "screen_record", 
+                            title: "Record indicator", 
+                            centered: false, // centered or not (only in center section)
+                            visible: false, 
+                            scrollTo: "" // scroll to this component when clicked (has also to be configured in BarConfig)
+                        },
+                        {
+                            id: "screen_share_indicator",
+                            icon: "screen_share",
+                            title: "Screen share indicator",
+                            centered: false,
+                            visible: false,
+                            scrollTo: ""
+                        },
+                        {
+                            id: "date",
+                            icon: "date_range",
+                            title: "Date",
+                            centered: false,
+                            visible: true,
+                            scrollTo: ""
+                        },
+                        {
+                            id: "battery",
+                            icon: "battery_android_6",
+                            title: "Battery",
+                            centered: false,
+                            visible: true,
+                            scrollTo: ""
+                        },
+                        {
+                            id: "timer",
+                            icon: "timer",
+                            title: "Timer & Pomodoro",
+                            centered: false,
+                            visible: true,
+                            scrollTo: "timerAndPomodoro"
+                        },
+                        {
+                            id: "weather",
+                            icon: "weather_mix",
+                            title: "Weather",
+                            centered: false,
+                            visible: true,
+                            scrollTo: ""
+                        },
+                        {
+                            id: "utility_buttons",
+                            icon: "build",
+                            title: "Utility buttons",
+                            centered: false,
+                            visible: true,
+                            scrollTo: "utility_buttons"
+                        }
                     ]
                     property list<var> left: [
                         { id: "policies_panel_button", icon: "star", title: "Policies panel button" },
                         { id: "active_window", icon: "label", title: "Active window" }
                     ]
                     property list<var> center: [
-                        { id: "music_player", icon: "music_note", title: "Music player" },
-                        { id: "workspaces", icon: "workspaces", title: "Workspaces", centered: true },
-                        { id: "system_monitor", icon: "monitor_heart", title: "System monitor" }
+                        {
+                            id: "music_player",
+                            icon: "music_note",
+                            title: "Music player",
+                            centered: false,
+                            visible: true,
+                            scrollTo: "music_player"
+                        },
+                        {
+                            id: "workspaces",
+                            icon: "workspaces",
+                            title: "Workspaces",
+                            centered: true,
+                            visible: true,
+                            scrollTo: "workspaces"
+                        },
+                        {
+                            id: "system_monitor",
+                            icon: "monitor_heart",
+                            title: "System monitor",
+                            centered: false,
+                            visible: true,
+                            scrollTo: ""
+                        }
                     ]
                     property list<var> right: [
                         { id: "clock", icon: "nest_clock_farsight_analog", title: "Clock" }, 
@@ -504,7 +580,7 @@ Singleton {
             }
 
             property JsonObject osd: JsonObject {
-                property int timeout: 2500
+                property int timeout: 2000
             }
 
             property JsonObject osk: JsonObject {
@@ -545,12 +621,20 @@ Singleton {
                 property list<var> workspaceMap: [0,10]
                 property bool showOpeningAnimation: true
 
+                property string style: "classic" // Options: classic, scrolling
+
+                property JsonObject hyprscrollingImplementation: JsonObject {
+                    property int maxWorkspaceWidth: 1200 //TODO: remove this too
+                }
                 property JsonObject scrollingStyle: JsonObject {
                     
                     property int dimPercentage: 50 // 0-75
                     property string backgroundStyle: "blur" // Options: transparent, blur, dim
                     property string zoomStyle: "in"         // Options: in, out
                 }
+                
+                property string position: "center" // Options: top, center, bottom
+                property int centerTopPaddingRatio: 3
             }
 
             property JsonObject regionSelector: JsonObject {
@@ -701,6 +785,7 @@ Singleton {
             property JsonObject time: JsonObject {
                 // https://doc.qt.io/qt-6/qtime.html#toString
                 property string format: "hh:mm"
+                property string formatSeconds: "hh:mm:ss"
                 property string shortDateFormat: "dd/MM"
                 property string longDateFormat: "dd/MM/yyyy"
                 property string dateWithYearFormat: "dd/MM/yyyy"
@@ -713,7 +798,7 @@ Singleton {
                     property int focus: 1500
                     property int longBreak: 900
                 }
-                property bool secondPrecision: false
+                property bool secondPrecision: true
             }
 
             property JsonObject updates: JsonObject {

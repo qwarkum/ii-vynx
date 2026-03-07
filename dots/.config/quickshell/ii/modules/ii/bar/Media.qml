@@ -83,8 +83,39 @@ Item {
         }
     }
 
+    ColumnLayout {
+        visible: Config.options.bar.mediaPlayer.useColumnLayout && (!LyricsService.hasSyncedLines || !lyricsEnabled)
+        width: parent.width - mediaCircProg.implicitSize * 2
+        
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: mediaCircProg.implicitSize / 2
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: -4
+        
+        StyledText {
+            id: trackArtistText
+            visible: Config.options.bar.verbose && activePlayer && activePlayer?.trackArtist
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: true // Ensures the text takes up available space
+            horizontalAlignment: Text.AlignHLeft
+            elide: Text.ElideRight // Truncates the text on the right
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance?.font.pixelSize.smaller
+            text: activePlayer?.trackArtist ?? ""
+        }
+        StyledText {
+            visible: Config.options.bar.verbose
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: true // Ensures the text takes up available space
+            horizontalAlignment: trackArtistText.visible ? Text.AlignHLeft : Text.AlignHCenter
+            elide: Text.ElideRight // Truncates the text on the right
+            color: Appearance.colors.colOnLayer1
+            text: cleanedTitle
+        }
+    }
+
     StyledText {
-        visible: !LyricsService.hasSyncedLines || !lyricsEnabled
+        visible: !Config.options.bar.mediaPlayer.useColumnLayout && (!LyricsService.hasSyncedLines || !lyricsEnabled)
         width: parent.width - mediaCircProg.implicitSize * 2
         
         anchors.horizontalCenter: parent.horizontalCenter
@@ -143,5 +174,4 @@ Item {
             }
         }   
     }
-    
 }

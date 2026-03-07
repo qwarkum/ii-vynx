@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -119,6 +118,48 @@ ContentPage {
             }
         }
     }
+
+    ContentSection {
+        icon: "transition_slide"
+        title: Translation.tr("Panel animation")
+
+        ConfigSwitch {
+            buttonIcon: "animation"
+            text: Translation.tr("Enable background animation")
+            checked: Config.options.appearance.panelAnimation.enableBackgroundAnimation
+            onCheckedChanged: {
+                Config.options.appearance.panelAnimation.enableBackgroundAnimation = checked;
+            }
+        }
+
+        ConfigRow {
+            ConfigSpinBox {
+                enabled: Config.options.appearance.panelAnimation.enableBackgroundAnimation
+                icon: "clock_arrow_down"
+                text: Translation.tr("Enter duration")
+                value: Config.options.appearance.panelAnimation.enterDuration
+                from: 200
+                to: 1000
+                stepSize: 50
+                onValueChanged: {
+                    Config.options.appearance.panelAnimation.enterDuration = value;
+                }
+            }
+            ConfigSpinBox {
+                enabled: Config.options.appearance.panelAnimation.enableBackgroundAnimation
+                icon: "clock_arrow_up"
+                text: Translation.tr("Exit duration")
+                value: Config.options.appearance.panelAnimation.exitDuration
+                from: 200
+                to: 1000
+                stepSize: 50
+                onValueChanged: {
+                    Config.options.appearance.panelAnimation.exitDuration = value;
+                }
+            }
+        }
+    }
+
     ContentSection {
         icon: "call_to_action"
         title: Translation.tr("Dock")
@@ -819,10 +860,23 @@ ContentPage {
             ConfigSwitch {
                 buttonIcon: "check"
                 text: Translation.tr("Enable")
+                Layout.fillWidth: false
                 checked: Config.options.overview.enable
                 onCheckedChanged: {
                     Config.options.overview.enable = checked;
                 }
+            }
+        }
+
+        ConfigSpinBox {
+            icon: "border_top"
+            text: Translation.tr("Center top padding ratio")
+            value: Config.options.overview.centerTopPaddingRatio
+            from: 1
+            to: 10
+            stepSize: 1
+            onValueChanged: {
+                Config.options.overview.centerTopPaddingRatio = value;
             }
         }
         
@@ -871,6 +925,31 @@ ContentPage {
             }
         }
 
+
+        ContentSubsection {
+            title: Translation.tr("Overview style")
+
+            ConfigSelectionArray {
+                register: true
+                currentValue: Config.options.overview.style
+                onSelected: newValue => {
+                    Config.options.overview.style = newValue
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Classic"),
+                        icon: "radio",
+                        value: "classic"
+                    },
+                    {
+                        displayName: Translation.tr("Scrolling"),
+                        icon: "calendar_view_day",
+                        value: "scrolling"
+                    }
+                ]
+            }
+        }
+
         ConfigRow {
             ConfigSwitch {
                 buttonIcon: "high_density"
@@ -910,6 +989,7 @@ ContentPage {
         
         ContentSubsection {
             title: Translation.tr("Classic overview style")
+            visible: Config.options.overview.style === "classic"
             ConfigRow {
                 uniform: true
                 ConfigSpinBox {
@@ -933,6 +1013,18 @@ ContentPage {
                     onValueChanged: {
                         Config.options.overview.columns = value;
                     }
+                }
+            }
+
+            ConfigSpinBox {
+                icon: "width"
+                text: Translation.tr("Max workspace width")
+                value: Config.options.overview.hyprscrollingImplementation.maxWorkspaceWidth
+                from: 100
+                to: 1900
+                stepSize: 100
+                onValueChanged: {
+                    Config.options.overview.hyprscrollingImplementation.maxWorkspaceWidth = value;
                 }
             }
 
@@ -995,7 +1087,8 @@ ContentPage {
 
 
         ContentSubsection {
-            title: Translation.tr("Scrolling overview style")
+            title: Translation.tr("Background style")
+            visible: Config.options.overview.style === "scrolling"
             ConfigSelectionArray {
                 register: true
                 currentValue: Config.options.overview.scrollingStyle.backgroundStyle
