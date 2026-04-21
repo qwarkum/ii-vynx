@@ -208,6 +208,7 @@ Singleton {
         property int verylarge: Config.options.appearance.sharpMode ? 0 : 30
         property int full: Config.options.appearance.sharpMode ? 0 : 9999
         property int screenRounding: large
+        property int drawingPanelRounding: large
         property int windowRounding: Config.options.appearance.sharpMode ? 0 : 18
     }
 

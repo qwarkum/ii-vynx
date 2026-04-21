@@ -383,7 +383,6 @@ Singleton {
                     }
                 }
                 property JsonObject layouts: JsonObject {
-<<<<<<< HEAD
                     // Only adding place-essential components to left-center-right
                     // And adding the dynamic components to leftover
                     property list<var> availableComps: [
@@ -444,10 +443,6 @@ Singleton {
                             scrollTo: "utility_buttons"
                         }
                     ]
-=======
-                    // Only storing id and layout-specific flags (visible, centered)
-                    // Component display info (icon, title) comes from BarComponentRegistry
->>>>>>> main
                     property list<var> left: [
                         {
                             id: "policies_panel_button"
@@ -458,7 +453,6 @@ Singleton {
                     ]
                     property list<var> center: [
                         {
-<<<<<<< HEAD
                             id: "music_player",
                             icon: "music_note",
                             title: "Music player",
@@ -481,16 +475,6 @@ Singleton {
                             centered: false,
                             visible: true,
                             scrollTo: ""
-=======
-                            id: "music_player"
-                        },
-                        {
-                            id: "workspaces",
-                            centered: true
-                        },
-                        {
-                            id: "system_monitor"
->>>>>>> main
                         }
                     ]
                     property list<var> right: [

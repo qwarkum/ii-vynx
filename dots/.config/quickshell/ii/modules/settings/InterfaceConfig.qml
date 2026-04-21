@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -924,23 +925,10 @@ ContentPage {
             ConfigSwitch {
                 buttonIcon: "check"
                 text: Translation.tr("Enable")
-                Layout.fillWidth: false
                 checked: Config.options.overview.enable
                 onCheckedChanged: {
                     Config.options.overview.enable = checked;
                 }
-            }
-        }
-
-        ConfigSpinBox {
-            icon: "border_top"
-            text: Translation.tr("Center top padding ratio")
-            value: Config.options.overview.centerTopPaddingRatio
-            from: 1
-            to: 10
-            stepSize: 1
-            onValueChanged: {
-                Config.options.overview.centerTopPaddingRatio = value;
             }
         }
         
@@ -989,31 +977,6 @@ ContentPage {
             }
         }
 
-
-        ContentSubsection {
-            title: Translation.tr("Overview style")
-
-            ConfigSelectionArray {
-                register: true
-                currentValue: Config.options.overview.style
-                onSelected: newValue => {
-                    Config.options.overview.style = newValue
-                }
-                options: [
-                    {
-                        displayName: Translation.tr("Classic"),
-                        icon: "radio",
-                        value: "classic"
-                    },
-                    {
-                        displayName: Translation.tr("Scrolling"),
-                        icon: "calendar_view_day",
-                        value: "scrolling"
-                    }
-                ]
-            }
-        }
-
         ConfigRow {
             ConfigSwitch {
                 buttonIcon: "high_density"
@@ -1053,7 +1016,6 @@ ContentPage {
         
         ContentSubsection {
             title: Translation.tr("Classic overview style")
-            visible: Config.options.overview.style === "classic"
             ConfigRow {
                 uniform: true
                 ConfigSpinBox {
@@ -1077,18 +1039,6 @@ ContentPage {
                     onValueChanged: {
                         Config.options.overview.columns = value;
                     }
-                }
-            }
-
-            ConfigSpinBox {
-                icon: "width"
-                text: Translation.tr("Max workspace width")
-                value: Config.options.overview.hyprscrollingImplementation.maxWorkspaceWidth
-                from: 100
-                to: 1900
-                stepSize: 100
-                onValueChanged: {
-                    Config.options.overview.hyprscrollingImplementation.maxWorkspaceWidth = value;
                 }
             }
 
@@ -1149,8 +1099,7 @@ ContentPage {
 
 
         ContentSubsection {
-            title: Translation.tr("Background style")
-            visible: Config.options.overview.style === "scrolling"
+            title: Translation.tr("Scrolling overview style")
             ConfigSelectionArray {
                 currentValue: Config.options.overview.scrollingStyle.backgroundStyle
                 onSelected: newValue => {

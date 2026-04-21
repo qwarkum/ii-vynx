@@ -11,4 +11,5 @@ RectangularShadow {
     spread: 1
     color: Appearance.colors.colShadow
     cached: true
+    visible: !Config.options.appearance.panelAnimation.enableBackgroundAnimation
 }

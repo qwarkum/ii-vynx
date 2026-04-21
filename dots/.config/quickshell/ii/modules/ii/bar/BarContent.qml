@@ -80,7 +80,11 @@ Item { // Bar content region
         }
         color: root.showBarBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
+        border.width: Config.options.bar.cornerStyle === 1 &&
+                      (Config.options.bar.bottom ||
+                       Config.options.bar.vertical ||
+                       !Config.options.appearance.transparency.enable ||
+                       !Config.options.appearance.panelAnimation.enableBackgroundAnimation) ? 1 : 0
         border.color: root.showBarBackground ? Appearance.colors.colLayer0Border : "transparent"
 
         Behavior on color {

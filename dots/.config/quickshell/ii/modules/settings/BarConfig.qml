@@ -280,8 +280,25 @@ ContentPage {
                 onCheckedChanged: {
                     Config.options.bar.mediaPlayer.useFixedSize = checked;
                 }
-            }   
+            }
 
+            ConfigSwitch {
+                enabled: !Config.options.bar.vertical
+                buttonIcon: "splitscreen"
+                text: "Use column layout"
+                checked: Config.options.bar.mediaPlayer.useColumnLayout
+                onCheckedChanged: {
+                    Config.options.bar.mediaPlayer.useColumnLayout = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Only available in horizontal mode")
+                }
+            }  
+
+        }
+
+        ConfigRow {
+            uniform: true
             ConfigSpinBox {
                 enabled: !Config.options.bar.vertical && Config.options.bar.mediaPlayer.useFixedSize
                 icon: "width_full"
@@ -294,18 +311,18 @@ ContentPage {
                     Config.options.bar.mediaPlayer.customSize = value;
                 }
             }
-        }
 
-        ConfigSpinBox {
-            enabled: !Config.options.bar.vertical
-            icon: "width_full"
-            text: Translation.tr("Lyrics width")
-            value: Config.options.bar.mediaPlayer.lyrics.customSize
-            from: 100
-            to: 750
-            stepSize: 25
-            onValueChanged: {
-                Config.options.bar.mediaPlayer.lyrics.customSize = value;
+            ConfigSpinBox {
+                enabled: !Config.options.bar.vertical
+                icon: "width_full"
+                text: Translation.tr("Lyrics width")
+                value: Config.options.bar.mediaPlayer.lyrics.customSize
+                from: 100
+                to: 750
+                stepSize: 25
+                onValueChanged: {
+                    Config.options.bar.mediaPlayer.lyrics.customSize = value;
+                }
             }
         }
 

@@ -153,10 +153,13 @@ Item {
         visible: Config.options.bar.mediaPlayer.useColumnLayout && (!LyricsService.hasSyncedLines || !lyricsEnabled)
         width: parent.width - mediaCircProg.implicitSize * 2
         
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: mediaCircProg.implicitSize / 2
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: -4
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            horizontalCenterOffset: artworkEnabled ? 0 : mediaCircProgSlot.width / 2
+            verticalCenter: parent.verticalCenter
+            verticalCenterOffset: 1 // to vertically center it
+        }
+        spacing: -3
         
         StyledText {
             id: trackArtistText
@@ -182,7 +185,6 @@ Item {
 
     StyledText {
         visible: !Config.options.bar.mediaPlayer.useColumnLayout && (!LyricsService.hasSyncedLines || !lyricsEnabled)
-        width: parent.width - mediaCircProg.implicitSize * 2
         anchors {
             horizontalCenter: parent.horizontalCenter
             horizontalCenterOffset: artworkEnabled ? 0 : mediaCircProgSlot.width / 2
