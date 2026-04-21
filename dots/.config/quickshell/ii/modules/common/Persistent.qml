@@ -66,7 +66,6 @@ Singleton {
 
             property JsonObject background: JsonObject {
                 property JsonObject mediaMode: JsonObject {
-                    property bool enabled: false // just a flag, cannot be changed directly
                     property real userScrollOffset: 0
                 }
             }
@@ -88,6 +87,10 @@ Singleton {
             property JsonObject booru: JsonObject {
                 property bool allowNsfw: false
                 property string provider: "yandere"
+            }
+
+            property JsonObject hyprland: JsonObject {
+                property string layout: "dwindle"
             }
 
             property JsonObject idle: JsonObject {
@@ -169,6 +172,18 @@ Singleton {
             property JsonObject screenRecord: JsonObject {
                 property bool active: false
                 property int seconds: 0
+            }
+
+            property JsonObject settings: JsonObject {
+                property JsonObject fonts: JsonObject {
+                    property string main: "Google Sans Flex"
+                    property string numbers: "Google Sans Flex"
+                    property string title: "Google Sans Flex"
+                    property string iconNerd: "JetBrains Mono NF"
+                    property string monospace: "JetBrains Mono NF"
+                    property string reading: "Readex Pro"
+                    property string expressive: "Space Grotesk" 
+                }
             }
 
             property JsonObject timer: JsonObject {

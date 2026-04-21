@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma Singleton
+import qs
 import qs.modules.common
 import qs.modules.common.utils
 import qs.modules.common.functions
@@ -19,7 +20,8 @@ Singleton {
         Search,
         CharRecognition,
         Record,
-        RecordWithSound
+        RecordWithSound,
+        AskAI
     }
 
     property string imageSearchEngineBaseUrl: Config.options.search.imageSearch.imageSearchEngineBaseUrl
@@ -32,7 +34,7 @@ Singleton {
         const rw = Math.round(width);
         const rh = Math.round(height);
         const cropBase = `magick ${StringUtils.shellSingleQuoteEscape(screenshotPath)} `
-            + `-crop ${rw}x${rh}+${rx}+${ry}`
+            + `-crop ${rw}x${rh}+${rx}+${ry} +repage`
         const cropToStdout = `${cropBase} -`
         const cropInPlace = `${cropBase} '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`
         const cleanup = `rm '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`
@@ -63,6 +65,9 @@ Singleton {
                 break;
             case ScreenshotAction.Action.Search:
                 return ["bash", "-c", `${cropInPlace} && xdg-open "${root.imageSearchEngineBaseUrl}$(${uploadAndGetUrl(screenshotPath)})" && ${cleanup}`]
+                break;
+            case ScreenshotAction.Action.AskAI:
+                return ["bash", "-c", `${cropToStdout} | wl-copy && ${cleanup}`]
                 break;
             case ScreenshotAction.Action.CharRecognition:
                 return ["bash", "-c", `${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy && ${cleanup}`]

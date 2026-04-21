@@ -22,6 +22,7 @@ ContentPage {
             text: Translation.tr("Vertical")
             checked: Config.options.background.parallax.vertical
             onCheckedChanged: {
+                HyprlandSettings.changeAnimation("workspaces", checked ? "slidevert" : "slide");
                 Config.options.background.parallax.vertical = checked;
             }
         }
@@ -49,11 +50,19 @@ ContentPage {
             icon: "loupe"
             text: Translation.tr("Preferred wallpaper zoom (%)")
             value: Config.options.background.parallax.workspaceZoom * 100
-            from: 100
-            to: 150
+            from: 10
+            to: 200
             stepSize: 1
             onValueChanged: {
                 Config.options.background.parallax.workspaceZoom = value / 100;
+            }
+        }
+        ConfigSwitch {
+            buttonIcon: "masked_transitions"
+            text: Translation.tr("Animate wallpaper changes")
+            checked: Config.options.background.animateWallpaperChanges
+            onCheckedChanged: {
+                Config.options.background.animateWallpaperChanges = checked;
             }
         }
     }
@@ -168,6 +177,20 @@ ContentPage {
             }
         }
 
+        ConfigSpinBox {
+            Layout.fillWidth: true
+            icon: "opacity"
+            text: Translation.tr("Background album art opacity (%)")
+            value: Config.options.background.mediaMode.backgroundOpacity
+            from: 0
+            to: 100
+            stepSize: 10
+            onValueChanged: {
+                Config.options.background.mediaMode.backgroundOpacity = value;
+            }
+        }
+
+
         ContentSubsection {
             title: Translation.tr("Text highlight style")
             ConfigSelectionArray {
@@ -226,7 +249,6 @@ ContentPage {
                 Layout.fillWidth: true
             }
             ConfigSelectionArray {
-                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.clock.placementStrategy
                 onSelected: newValue => {
@@ -267,7 +289,6 @@ ContentPage {
                 title: Translation.tr("Clock style")
                 Layout.fillWidth: true
                 ConfigSelectionArray {
-                    register: true
                     currentValue: Config.options.background.widgets.clock.style
                     onSelected: newValue => {
                         Config.options.background.widgets.clock.style = newValue;
@@ -291,7 +312,6 @@ ContentPage {
                 title: Translation.tr("Clock style (locked)")
                 Layout.fillWidth: false
                 ConfigSelectionArray {
-                    register: true
                     currentValue: Config.options.background.widgets.clock.styleLocked
                     onSelected: newValue => {
                         Config.options.background.widgets.clock.styleLocked = newValue;
@@ -360,6 +380,29 @@ ContentPage {
                     }
                 }
             }
+
+            ConfigRow {
+                uniform: true
+
+                ConfigSwitch {
+                    buttonIcon: "colors"
+                    text: Translation.tr("Colorful digits")
+                    checked: Config.options.background.widgets.clock.digital.colorful
+                    onCheckedChanged: {
+                        Config.options.background.widgets.clock.digital.colorful = checked;
+                    }
+                }
+                ConfigSwitch {
+                    enabled: !Config.options.background.widgets.clock.digital.vertical
+                    buttonIcon: "go_to_line"
+                    text: Translation.tr("Show colon")
+                    checked: Config.options.background.widgets.clock.digital.showColon
+                    onCheckedChanged: {
+                        Config.options.background.widgets.clock.digital.showColon = checked;
+                    }
+                }
+            }
+            
 
             MaterialTextArea {
                 Layout.fillWidth: true
@@ -447,7 +490,7 @@ ContentPage {
                     Config.options.background.widgets.clock.cookie.constantlyRotate = checked;
                 }
                 StyledToolTip {
-                    text: "Makes the clock always rotate. This is extremely expensive\n(expect 50% usage on Intel UHD Graphics) and thus impractical."
+                    text: Translation.tr("Makes the clock always rotate. This is extremely expensive\n(expect 50% usage on Intel UHD Graphics) and thus impractical.")
                 }
             }
 
@@ -465,7 +508,7 @@ ContentPage {
                         Config.options.background.widgets.clock.cookie.hourMarks = checked;
                     }
                     StyledToolTip {
-                        text: "Can only be turned on using the 'Dots' or 'Full' dial style for aesthetic reasons"
+                        text: Translation.tr("Can only be turned on using the 'Dots' or 'Full' dial style for aesthetic reasons")
                     }
                 }
 
@@ -481,7 +524,7 @@ ContentPage {
                         Config.options.background.widgets.clock.cookie.timeIndicators = checked;
                     }
                     StyledToolTip {
-                        text: "Can't be turned on when using 'Numbers' dial style for aesthetic reasons"
+                        text: Translation.tr("Can't be turned on when using 'Numbers' dial style for aesthetic reasons")
                     }
                 }
             }
@@ -842,7 +885,6 @@ ContentPage {
                 Layout.fillWidth: true
             }
             ConfigSelectionArray {
-                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.weather.placementStrategy
                 onSelected: newValue => {
@@ -905,7 +947,6 @@ ContentPage {
             }
 
             ConfigSelectionArray {
-                register: true
                 Layout.fillWidth: false
                 currentValue: Config.options.background.widgets.media.placementStrategy
                 onSelected: newValue => {

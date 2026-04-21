@@ -12,6 +12,8 @@ import qs.modules.common.utils
 
 Item {
     id: root
+    Layout.fillHeight: true
+
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
     
@@ -19,13 +21,19 @@ Item {
     property int lyricsCustomSize: Config.options.bar.mediaPlayer.lyrics.customSize
     readonly property int maxWidth: 300
 
-    readonly property bool showLoadingIndicator: Config.options.bar.mediaPlayer.lyrics.showLoadingIndicator
+    property bool useFixedSize: Config.options.bar.mediaPlayer.useFixedSize
     readonly property bool lyricsEnabled: Config.options.bar.mediaPlayer.lyrics.enable
     readonly property bool useGradientMask: Config.options.bar.mediaPlayer.lyrics.useGradientMask
     readonly property string lyricsStyle: Config.options.bar.mediaPlayer.lyrics.style
+    readonly property bool artworkEnabled: Config.options.bar.mediaPlayer.artwork.enable
 
-    Layout.fillHeight: true
-    implicitWidth: LyricsService.hasSyncedLines && root.lyricsEnabled ? lyricsCustomSize : customSize
+    readonly property int progressButtonSize: 20
+    readonly property int artworkBoxSize: artworkEnabled ? Math.min(25, Appearance.sizes.barHeight - 8) : 0
+    readonly property int artworkContentPadding: artworkEnabled ? 6 : 0
+
+    property int textMetricsSpacing: artworkEnabled ? 70 : 50 // text metrics returns width without spacing
+    property int textMetricsAdvance: Math.min(textMetrics.advanceWidth + textMetricsSpacing, Config.options.bar.mediaPlayer.maxSize)
+    implicitWidth: LyricsService.hasSyncedLines && root.lyricsEnabled ? lyricsCustomSize : useFixedSize ? customSize : textMetricsAdvance
     implicitHeight: Appearance.sizes.barHeight
 
     Behavior on implicitWidth {
@@ -34,6 +42,53 @@ Item {
 
     Component.onCompleted: {
         LyricsService.initiliazeLyrics()
+    }
+
+    readonly property string artSource: activePlayer?.trackArtUrl && activePlayer.trackArtUrl !== "" ? activePlayer.trackArtUrl : ""
+
+    Item {
+        id: artworkItem
+        visible: artworkEnabled
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        width: artworkEnabled ? artworkBoxSize : 0
+        height: artworkEnabled ? artworkBoxSize : 0
+
+        Rectangle {
+            anchors.fill: parent
+            color: Appearance.colors.colPrimaryContainer
+            radius: Appearance.rounding.full
+
+            Image {
+                anchors.fill: parent
+                source: root.artSource
+                fillMode: Image.PreserveAspectCrop
+                cache: false
+                antialiasing: true
+                width: parent.width
+                height: parent.height
+                sourceSize.width: width
+                sourceSize.height: height
+
+                layer.enabled: true
+                layer.effect: OpacityMask {
+                    maskSource: Rectangle {
+                        width: artworkItem.width
+                        height: artworkItem.height
+                        radius: Appearance.rounding.full
+                    }
+                }
+            }
+
+            MaterialSymbol {
+                anchors.centerIn: parent
+                visible: root.artSource.length === 0
+                fill: 1
+                text: "music_note"
+                iconSize: Math.max(12, artworkItem.width * 0.5)
+                color: Appearance.colors.colOnSecondaryContainer
+            }
+        }
     }
 
     MouseArea {
@@ -55,32 +110,43 @@ Item {
         }   
     }
 
-    ClippedFilledCircularProgress {
-        id: mediaCircProg
-        visible: !loadingIndLoader.active
-        
-        anchors.left: parent.left
+    Item {
+        id: mediaCircProgSlot
+        width: root.progressButtonSize
+        height: root.progressButtonSize
         anchors.verticalCenter: parent.verticalCenter
+        x: artworkEnabled ? root.width - width : 0
 
-        lineWidth: Appearance.rounding.unsharpen
-        value: activePlayer?.position / activePlayer?.length
-        implicitSize: 20
-        colPrimary: Appearance.colors.colOnSecondaryContainer
-        enableAnimation: false
+        ClippedFilledCircularProgress {
+            id: mediaCircProg
+            anchors.fill: parent
+            visible: !loadingIndLoader.active
+            implicitSize: root.progressButtonSize
 
-        Item {
-            anchors.centerIn: parent
-            width: mediaCircProg.implicitSize
-            height: mediaCircProg.implicitSize
-            
-            MaterialSymbol {
+            lineWidth: Appearance.rounding.unsharpen
+            value: activePlayer?.position / activePlayer?.length
+            colPrimary: Appearance.colors.colOnSecondaryContainer
+            enableAnimation: false
+
+            Item {
                 anchors.centerIn: parent
-                fill: 1
-                text: activePlayer?.isPlaying ? "pause" : "music_note"
-                iconSize: Appearance.font.pixelSize.normal
-                color: Appearance.m3colors.m3onSecondaryContainer
+                width: mediaCircProg.implicitSize
+                height: mediaCircProg.implicitSize
+                
+                MaterialSymbol {
+                    anchors.centerIn: parent
+                    fill: 1
+                    text: activePlayer?.isPlaying ? "pause" : "music_note"
+                    iconSize: Appearance.font.pixelSize.normal
+                    color: Appearance.m3colors.m3onSecondaryContainer
+                }
             }
         }
+    }
+
+    TextMetrics {
+        id: textMetrics
+        text: `${cleanedTitle}${activePlayer?.trackArtist ? ' • ' + activePlayer.trackArtist : ''}`
     }
 
     ColumnLayout {
@@ -117,26 +183,28 @@ Item {
     StyledText {
         visible: !Config.options.bar.mediaPlayer.useColumnLayout && (!LyricsService.hasSyncedLines || !lyricsEnabled)
         width: parent.width - mediaCircProg.implicitSize * 2
-        
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: mediaCircProg.implicitSize / 2
-        anchors.verticalCenter: parent.verticalCenter
-        
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            horizontalCenterOffset: artworkEnabled ? 0 : mediaCircProgSlot.width / 2
+            verticalCenter: parent.verticalCenter
+            verticalCenterOffset: 1 // to vertically center it
+        }
         horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight // Truncates the text on the right
+        width: artworkEnabled ? parent.implicitWidth - (artworkItem.width + mediaCircProgSlot.width + artworkContentPadding + 16) : parent.implicitWidth - mediaCircProgSlot.width - 16
+        elide: Text.ElideRight
         color: Appearance.colors.colOnLayer1
         text: `${cleanedTitle}${activePlayer?.trackArtist ? ' • ' + activePlayer.trackArtist : ''}`
-    } 
+    }
 
     Loader {
         id: lyricsItemLoader 
         active: lyricsEnabled
 
-        width: parent.width - mediaCircProg.implicitSize * 2
+        width: artworkEnabled ? parent.width - (artworkItem.width + mediaCircProg.implicitSize * 2) : parent.width - mediaCircProg.implicitSize * 2
         height: parent.height
         
         anchors.left: parent.left
-        anchors.leftMargin: mediaCircProg.implicitSize * 1.5
+        anchors.leftMargin: artworkEnabled ? mediaCircProg.implicitSize * 1.5 + artworkContentPadding : mediaCircProg.implicitSize * 1.5
 
         sourceComponent: Item {
             id: lyricsItem

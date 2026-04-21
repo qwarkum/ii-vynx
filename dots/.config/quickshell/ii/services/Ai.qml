@@ -267,18 +267,18 @@ Singleton {
     // - extraParams: Extra parameters to be passed to the model. This is a JSON object.
     property var models: Config.options.policies.ai === 2 ? {} : {
         "openrouter": aiModelComponent.createObject(this, {
-            name: `OpenRouter - ${currentModel}`,
-            icon: "openrouter-symbolic",
-            description: Translation.tr("Online via %1 | %2's model")
+            "name": `OpenRouter - ${currentModel}`,
+            "icon": "openrouter-symbolic",
+            "description": Translation.tr("Online via %1 | %2's model")
                 .arg("OpenRouter")
                 .arg("Google"),
-            homepage: `https://openrouter.ai/google/${currentModel}`, 
-            endpoint: "https://openrouter.ai/api/v1/chat/completions",
-            model: `${getModelProvider(Persistent.states.ai.provider,currentModel)}/${currentModel}`,
-            requires_key: true,
-            key_id: "openrouter",
-            key_get_link: "https://openrouter.ai/settings/keys",
-            key_get_description: Translation.tr(
+            "homepage": `https://openrouter.ai/google/${currentModel}`, 
+            "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+            "model": `${getModelProvider(Persistent.states.ai.provider,currentModel)}/${currentModel}`,
+            "requires_key": true,
+            "key_id": "openrouter",
+            "key_get_link": "https://openrouter.ai/settings/keys",
+            "key_get_description": Translation.tr(
                 "**Pricing**: Pay-as-you-go (token based).\n\n" +
                 "**Instructions**: Log into your OpenRouter account, " +
                 "go to Keys in the top-right menu, and create an API key."
@@ -297,19 +297,18 @@ Singleton {
             "key_get_description": Translation.tr("**Pricing**: free. Data used for training.\n\n**Instructions**: Log into Google account, allow AI Studio to create Google Cloud project or whatever it asks, go back and click Get API key"),
             "api_format": "gemini",
         }),
-        "mistral": aiModelComponent.createObject(this, {
-            "name": `Mistral - ${currentModel}`,
-            "icon": "mistral-symbolic",
-            "description": Translation.tr("Online | %1's model | Delivers fast, responsive and well-formatted answers. Disadvantages: not very eager to do stuff; might make up unknown function calls").arg("Mistral"),
-            "homepage": "https://mistral.ai/news/mistral-medium-3",
-            "endpoint": "https://api.mistral.ai/v1/chat/completions",
-            "model": "mistral-medium-2505",
-            "requires_key": true,
-            "key_id": "mistral",
-            "key_get_link": "https://console.mistral.ai/api-keys",
-            "key_get_description": Translation.tr("**Instructions**: Log into Mistral account, go to Keys on the sidebar, click Create new key"),
-            "api_format": "mistral",
-        }),
+        "others": (root.otherModels && Persistent.states?.ai?.model && root.otherModels[Persistent.states.ai.model]) ? root.otherModels[Persistent.states.ai.model] : (Object.keys(root.otherModels).length > 0 ? root.otherModels[Object.keys(root.otherModels)[0]] : null)
+    }
+        
+    property var otherModels: {
+        let result = {};
+        const configModels = Config.options.ai.otherModels;
+        for (let i = 0; i < configModels.length; i++) {
+            const modelData = configModels[i];
+            const modelId = modelData.id || modelData.model || modelData.name;
+            result[modelId] = aiModelComponent.createObject(this, modelData);
+        }
+        return result;
     }
     property var modelList: Object.keys(root.models)
     property var currentModelId: Persistent.states?.ai?.provider || modelList[0]
@@ -323,12 +322,23 @@ Singleton {
             { title: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
             { title: "Gemini 3 Flash Preview", value: "gemini-3-flash-preview" }
         ],
-        "mistral": [
-            { title: "Mistral Medium 3", value: "mistral-medium-3" }
-        ],
+        "others": []
     }
 
-    property var modelsOfProviders: baseModels
+    property var modelsOfProviders: {
+        let providers = {}
+        for (let key in baseModels) {
+            providers[key] = baseModels[key].slice()
+        }
+        providers["others"] = Object.keys(root.otherModels).map(key => {
+            return { title: root.otherModels[key].name, value: key }
+        });
+        if (Config.options.ai.models.length > 0) {
+            return mergeModelsFromList(providers, Config.options.ai.models)
+        } else {
+            return providers;
+        }
+    }
 
     function mergeModelsFromList(base, extraList) {
 
@@ -381,9 +391,7 @@ Singleton {
 
     Component.onCompleted: {
         setModel(currentModelId, false, false); // Do necessary setup for model
-        if (Config.options.ai.extraModels.length > 0) {
-            modelsOfProviders = mergeModelsFromList(baseModels, Config.options.ai.extraModels)
-        }
+        root.addUserModels() // Config onReadyChanged above might not fire if config is loaded before this service
     }
 
     function guessModelLogo(model) {
@@ -408,7 +416,9 @@ Singleton {
     }
 
     function addModel(modelName, data) {
-        root.models[modelName] = aiModelComponent.createObject(this, data);
+        root.models = Object.assign({}, root.models, {
+            [modelName]: aiModelComponent.createObject(this, data)
+        });
     }
 
     Process {
@@ -665,7 +675,16 @@ Singleton {
             const endpoint = root.currentApiStrategy.buildEndpoint(model);
             const messageArray = root.messageIDs.map(id => root.messageByID[id]);
             const filteredMessageArray = messageArray.filter(message => message.role !== Ai.interfaceRole);
-            const data = root.currentApiStrategy.buildRequestData(model, filteredMessageArray, root.systemPrompt, root.temperature, root.tools[model.api_format][root.currentTool], root.pendingFilePath);
+            const tools = (model.endpoint.includes("localhost")) ? null : root.tools[model.api_format][root.currentTool];
+
+            const data = root.currentApiStrategy.buildRequestData(
+                model,
+                filteredMessageArray,
+                root.systemPrompt,
+                root.temperature,
+                tools,
+                root.pendingFilePath
+            );
             // console.log("[Ai] Request data: ", JSON.stringify(data, null, 2));
 
             let requestHeaders = {
@@ -777,6 +796,48 @@ Singleton {
         if (message.length === 0) return;
         root.addMessage(message, "user");
         requester.makeRequest();
+    }
+
+    Process {
+        id: decodeImageAndAttachProc
+        property string imageDecodePath: Directories.cliphistDecode
+        property string imageDecodeFileName: "image"
+        property string imageDecodeFilePath: `${imageDecodePath}/${imageDecodeFileName}`
+        function handleEntry(entry: string) {
+            imageDecodeFileName = parseInt(entry.match(/^(\d+)\t/)[1]);
+            decodeImageAndAttachProc.exec(["bash", "-c", `[ -f ${imageDecodeFilePath} ] || echo '${CF.StringUtils.shellSingleQuoteEscape(entry)}' | ${Cliphist.cliphistBinary} decode > '${imageDecodeFilePath}'`]);
+        }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                Ai.attachFile(imageDecodeFilePath);
+            } else {
+                console.error("[Ai] Failed to decode image in clipboard content");
+            }
+        }
+    }
+    
+    // This is being called by RegionSelection.qml
+    function handleClipboardAndAttach() {
+        handleClipboardTimer.start()
+    }
+    // We have to delay this a little to make sure the clipboard is updated
+    Timer {
+        id: handleClipboardTimer
+        interval: 450
+        onTriggered: {
+            const currentClipboardEntry = Cliphist.entries[0];
+            const cleanCliphistEntry = CF.StringUtils.cleanCliphistEntry(currentClipboardEntry);
+            if (/^\d+\t\[\[.*binary data.*\d+x\d+.*\]\]$/.test(currentClipboardEntry)) {
+                // First entry = currently copied entry = image?
+                decodeImageAndAttachProc.handleEntry(currentClipboardEntry);
+                return;
+            } else if (cleanCliphistEntry.startsWith("file://")) {
+                // First entry = currently copied entry = image?
+                const fileName = decodeURIComponent(cleanCliphistEntry);
+                Ai.attachFile(fileName);
+                return;
+            }
+        }
     }
 
     function attachFile(filePath: string) {

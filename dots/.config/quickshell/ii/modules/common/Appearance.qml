@@ -199,17 +199,16 @@ Singleton {
     }
 
     rounding: QtObject {
-        property int unsharpen: 2
-        property int unsharpenmore: 6
-        property int verysmall: 8
-        property int small: 12
-        property int normal: 17
-        property int large: 23
-        property int verylarge: 30
-        property int full: 9999
+        property int unsharpen: Config.options.appearance.sharpMode ? 0 : 2
+        property int unsharpenmore: Config.options.appearance.sharpMode ? 0 : 6
+        property int verysmall: Config.options.appearance.sharpMode ? 0 : 8
+        property int small: Config.options.appearance.sharpMode ? 0 : 12
+        property int normal: Config.options.appearance.sharpMode ? 0 : 17
+        property int large: Config.options.appearance.sharpMode ? 0 : 23
+        property int verylarge: Config.options.appearance.sharpMode ? 0 : 30
+        property int full: Config.options.appearance.sharpMode ? 0 : 9999
         property int screenRounding: large
-        property int drawingPanelRounding: large
-        property int windowRounding: 18
+        property int windowRounding: Config.options.appearance.sharpMode ? 0 : 18
     }
 
     font: QtObject {
@@ -283,6 +282,20 @@ Singleton {
             }
         }
 
+        property QtObject elementMoveSmall: QtObject {
+            property int duration: animationCurves.expressiveFastSpatialDuration
+            property int type: Easing.BezierSpline
+            property list<real> bezierCurve: animationCurves.expressiveFastSpatial
+            property int velocity: 650
+            property Component numberAnimation: Component {
+                NumberAnimation {
+                    duration: root.animation.elementMoveSmall.duration
+                    easing.type: root.animation.elementMoveSmall.type
+                    easing.bezierCurve: root.animation.elementMoveSmall.bezierCurve
+                }
+            }
+        }
+
         property QtObject elementMoveEnter: QtObject {
             property int duration: 400
             property int type: Easing.BezierSpline
@@ -311,6 +324,24 @@ Singleton {
                     easing.bezierCurve: root.animation.elementMoveExit.bezierCurve
                 }
             }
+        }
+
+        property QtObject elementMoveSlow: QtObject {
+            property int duration: animationCurves.expressiveEffectsDuration * 2.5
+            property int type: Easing.BezierSpline
+            property list<real> bezierCurve: animationCurves.expressiveEffects
+            property int velocity: 850
+            property Component colorAnimation: Component { ColorAnimation {
+                duration: root.animation.elementMoveSlow.duration
+                easing.type: root.animation.elementMoveSlow.type
+                easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
+            }}
+            property Component numberAnimation: Component { NumberAnimation {
+                alwaysRunToEnd: true
+                duration: root.animation.elementMoveSlow.duration
+                easing.type: root.animation.elementMoveSlow.type
+                easing.bezierCurve: root.animation.elementMoveSlow.bezierCurve
+            }}
         }
 
         property QtObject elementMoveFast: QtObject {
@@ -362,7 +393,7 @@ Singleton {
         property QtObject scroll: QtObject {
             property int duration: 200
             property int type: Easing.BezierSpline
-            property list<real> bezierCurve: animationCurves.standardDecel
+            property list<real> bezierCurve: root.animationCurves.standardDecel
         }
 
         property QtObject menuDecel: QtObject {
@@ -400,6 +431,7 @@ Singleton {
         property real wallpaperSelectorHeight: 690
         property real wallpaperSelectorItemMargins: 8
         property real wallpaperSelectorItemPadding: 6
+        property int dockButtonSize: Math.round((Config.options?.dock.height ?? 60) * 0.85)
     }
 
     syntaxHighlightingTheme: root.m3colors.darkmode ? "Monokai" : "ayu Light"

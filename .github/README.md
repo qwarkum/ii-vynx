@@ -9,8 +9,12 @@
 
 |  |  |
 | ----------- | ----------- |
-| <img width="1919" height="1078" alt="image" src="https://github.com/user-attachments/assets/9297bec7-63b4-47bf-8905-9a4baa8de4e9" /> | <img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/daaa6c22-2004-4adc-abe0-a93cd594f5b6" /> |  
-| <img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/b35f2b3d-3b8c-470b-aa9a-db85703944ce" /> | <img width="1920" height="1078" alt="image" src="https://github.com/user-attachments/assets/56036681-cf01-4836-b003-4b53675a5240" /> |
+| <img width="1919" height="1078" alt="image" src="https://github.com/user-attachments/assets/9297bec7-63b4-47bf-8905-9a4baa8de4e9" /> | <img width="1916" height="1078" alt="image" src="https://github.com/user-attachments/assets/53c3b4be-9ba0-40dc-8570-c6a3a80c18cf" /> |  
+
+| Media mode | Sharp style |
+| ----------- | ----------- |
+| <img width="1920" height="1077" alt="image" src="https://github.com/user-attachments/assets/a966c5ca-ef0a-4ecf-882b-e7ef55dde74e" /> | <img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/745aafcd-246e-4433-a81f-37a88ac5c1ee" /> |
+
 
 
 
@@ -21,10 +25,11 @@
     <h2>• warning •</h2>
 </div>
 
-These dots are not mine! You can access original dots from : https://github.com/end-4/dots-hyprland. 
+These dots are based on **illogical-impulse**. You can access original **illogical-impulse** dots from [here](https://github.com/end-4/dots-hyprland)
 
-This repo contains my PRs and tweaks to original dots. (mostly up to date with original dots). This is my current daily driver.
-However there can (and will) be bugs **so don't expect stability here**. Use these dots if you know what you are doing.
+This dots contains my tweaks to original illogical-impulse dots. It's mostly up to date with original dots and my daily driver. However there may be bugs and stability issues. You can join this [ii-vynx channel](https://discord.com/channels/1393080422245863506/1457739857240653961) in end-4's official discord server to report the bugs and chat about this repository. Use [Github Issues](https://github.com/vaguesyntax/ii-vynx/issues) for real issue though.
+
+**P.S.** Before saying _"These dots are bloated"_, keep in mind that there’s a toggle for everything.
 
 <div align="center">
     <h2>• installation •</h2>
@@ -44,7 +49,7 @@ git clone https://github.com/vaguesyntax/ii-vynx.git --recurse-submodules
 mv ~/.config/quickshell/ii ~/.config/quickshell/ii.backup
 ```
 
-4. Copy the `ii` folder config from repo into your Quickshell config directory:
+Tip: You can see all flags with `--help`:
 ```
 cp -r ii-vynx/dots/.config/quickshell/ii ~/.config/quickshell/
 ```
@@ -57,7 +62,28 @@ mv ~/.config/quickshell/ii.backup ~/.config/quickshell/ii
 ```
 
 <div align="center">
-    <h2>• wiki •</h2>
+    <h2>• updating •</h2>
+</div>
+
+Run the setup script:
+  
+```bash
+./setup-ii-vynx.sh
+```
+
+Run the cli (if it's installed):
+  
+```bash
+vynx update
+```
+
+Use the update button:
+  
+<img width="354" height="78" alt="image" src="https://github.com/user-attachments/assets/77d9d962-00b3-48a4-b9d5-1d3d0c053e86" />
+
+
+<div align="center">
+    <h2>• documentation •</h2>
 </div>
 
 Please refer to [this repository's wiki](https://github.com/vaguesyntax/ii-vynx/wiki) for detailed component descriptions and further information.

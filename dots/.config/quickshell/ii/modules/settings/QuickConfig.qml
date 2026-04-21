@@ -169,41 +169,13 @@ ContentPage {
                     z: 1
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    readonly property bool mediaModeEnabled: Persistent.states.background.mediaMode.enabled
                     
-                    Loader {
-                        z: 1
-                        anchors.top: parent.top
-                        anchors.topMargin: 60
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        active: colorGridItem.mediaModeEnabled
-                        sourceComponent: StyledText {
-                            text: Translation.tr("Media mode enabled")
-                            font.pixelSize: Appearance.font.pixelSize.large
-                        }
-                    }
-                    
-
-                    Loader {
-                        anchors.fill: parent
-                        active: colorGridItem.mediaModeEnabled
-                        sourceComponent: Rectangle {
-                            anchors.fill: parent
-                            opacity: 0.5
-                            color: Appearance.colors.colSecondaryContainer
-                            radius: Appearance.rounding.small
-                        }
-                    }
-                    
-
                     StyledFlickable {
                         id: flickable
                         anchors.fill: parent
                         contentHeight: contentLayout.implicitHeight
                         contentWidth: width
                         clip: true
-                        enabled: !colorGridItem.mediaModeEnabled
-
 
                         ColumnLayout {
                             id: contentLayout
@@ -289,6 +261,7 @@ ContentPage {
         ConfigRow {
             ContentSubsection {
                 title: Translation.tr("Bar position")
+                Layout.fillWidth: true
                 ConfigSelectionArray {
                     currentValue: (Config.options.bar.bottom ? 1 : 0) | (Config.options.bar.vertical ? 2 : 0)
                     onSelected: newValue => {
@@ -321,6 +294,7 @@ ContentPage {
             }
             ContentSubsection {
                 title: Translation.tr("Bar style")
+                Layout.fillWidth: false
 
                 ConfigSelectionArray {
                     currentValue: Config.options.bar.cornerStyle
@@ -351,9 +325,9 @@ ContentPage {
         ConfigRow {
             ContentSubsection {
                 title: Translation.tr("Screen round corner")
+                Layout.fillWidth: true
 
                 ConfigSelectionArray {
-                    register: true
                     currentValue: Config.options.appearance.fakeScreenRounding
                     onSelected: newValue => {
                         Config.options.appearance.fakeScreenRounding = newValue;
@@ -370,7 +344,7 @@ ContentPage {
                             value: 1
                         },
                         {
-                            displayName: Translation.tr("When not fullscreen"),
+                            displayName: Translation.tr("Not fullscreen"),
                             icon: "fullscreen_exit",
                             value: 2
                         },
@@ -382,7 +356,31 @@ ContentPage {
                     ]
                 }
             }
-            
+
+            ContentSubsection {
+                title: Translation.tr("Rounding style")
+                Layout.fillWidth: false
+
+                ConfigSelectionArray {
+                    currentValue: Config.options.appearance.sharpMode
+                    onSelected: newValue => {
+                        Config.options.appearance.sharpMode = newValue;
+                        HyprlandSettings.setRounding(newValue ? 0 : Config.options.appearance.defaultBorderRadius);
+                    }
+                    options: [ 
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "rounded_corner",
+                            value: false
+                        }, 
+                        {
+                            displayName: Translation.tr("Sharp"),
+                            icon: "square",
+                            value: true
+                        }
+                    ]
+                }
+            } 
         }
 
         ConfigSpinBox {
@@ -398,40 +396,70 @@ ContentPage {
             }
         }
 
-        ContentSubsection {
-            title: Translation.tr("Bar background style")
-            tooltip: Translation.tr("Adaptive style makes the bar background transparent when there are no active windows")
-            Layout.fillWidth: false
+        ConfigRow {
+            ContentSubsection {
+                title: Translation.tr("Bar background style")
+                Layout.fillWidth: true
 
-            ConfigSelectionArray {
-                register: true
-                currentValue: Config.options.bar.barBackgroundStyle
-                onSelected: newValue => {
-                    Config.options.bar.barBackgroundStyle = newValue;
-                }
-                options: [ 
-                    {
-                        displayName: Translation.tr("Visible"),
-                        icon: "visibility",
-                        value: 1
-                    }, 
-                    {
-                        displayName: Translation.tr("Adaptive"),
-                        icon: "masked_transitions",
-                        value: 2
-                    },        
-                    {
-                        displayName: Translation.tr("Transparent"),
-                        icon: "opacity",
-                        value: 0
+                ConfigSelectionArray {
+                    currentValue: Config.options.bar.barBackgroundStyle
+                    onSelected: newValue => {
+                        Config.options.bar.barBackgroundStyle = newValue;
                     }
-                ]
+                    options: [ 
+                        {
+                            displayName: Translation.tr("Visible"),
+                            icon: "visibility",
+                            value: 1
+                        }, 
+                        {
+                            displayName: Translation.tr("Adaptive"),
+                            icon: "masked_transitions",
+                            value: 2
+                        },        
+                        {
+                            displayName: Translation.tr("Transparent"),
+                            icon: "opacity",
+                            value: 0
+                        }
+                    ]
+                }
             }
-        }
-    }
+            
+            ContentSubsection {
+                title: Translation.tr("Hyprland layout")
+                Layout.fillWidth: false
 
-    
-    
+                ConfigSelectionArray {
+                    currentValue: {
+                        if (Persistent.states.hyprland.layout !== "scrolling") return "default"
+                        else return "scrolling"
+                    }
+                    onSelected: newValue => {
+                        console.log(newValue)
+                        if (newValue === "scrolling") {
+                            HyprlandSettings.setLayout("scrolling")
+                        } else {
+                            const defaultLayout = Config.options.hyprland.defaultHyprlandLayout
+                            HyprlandSettings.setLayout(defaultLayout)
+                        }
+                    }
+                    options: [ 
+                        {
+                            displayName: Translation.tr("Default"),
+                            icon: "mobile_layout",
+                            value: "default"
+                        }, 
+                        {
+                            displayName: Translation.tr("Scrolling"),
+                            icon: "view_carousel",
+                            value: "scrolling"
+                        }
+                    ]
+                }
+            }                          
+        }
+    }    
 
     NoticeBox {
         Layout.fillWidth: true

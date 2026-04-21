@@ -12,6 +12,8 @@ Item {
     property var shape
     property bool rotateIcon: false
     property bool scaleIcon: false
+    property alias from: valueProgressBar.from
+    property alias to: valueProgressBar.to
 
     property real valueIndicatorVerticalPadding: 9
     property real valueIndicatorLeftPadding: 15
@@ -52,10 +54,7 @@ Item {
 
                 MaterialShapeWrappedMaterialSymbol {
                     rotation: root.value * 360
-                    anchors {
-                        fill: parent
-                        margins: -5
-                    }
+                    anchors.centerIn: parent
                     iconSize: Appearance.font.pixelSize.huge
                     shape: root.shape
                     text: root.icon
@@ -84,9 +83,6 @@ Item {
                         Layout.preferredWidth: 30
                         horizontalAlignment: Text.AlignRight
                         text: Math.round(root.value * 100)
-                        animateChange: false
-                        animationDistanceY: 2 // for faster animation than default
-                        
                     }
                 }
                 
