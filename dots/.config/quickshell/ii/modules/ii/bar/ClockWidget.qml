@@ -9,7 +9,7 @@ Item {
     property bool showDate: Config.options.bar.verbose
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 10
     implicitHeight: Appearance.sizes.barHeight
-    property color colText: LocalSend.currentTransfer ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+    property color colText: dropArea.containsDrag ? Appearance.colors.colPrimary : LocalSend.currentTransfer ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
 
     Connections {
         target: LocalSend
@@ -45,6 +45,18 @@ Item {
             font.pixelSize: Appearance.font.pixelSize.small
             color: root.colText
             text: DateTime.longDate
+        }
+    }
+
+    DropArea {
+        id: dropArea
+        anchors.fill: parent
+        keys: ["text/uri-list"]
+        onDropped: (drop) => {
+            if (!drop.hasUrls) return
+            for (let i = 0; i < drop.urls.length; i++)
+                LocalSend.addDroppedFile(drop.urls[i])
+            drop.accept(Qt.CopyAction)
         }
     }
 

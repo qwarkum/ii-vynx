@@ -7,8 +7,8 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * LocalSend service for receiving files via localsend-cli.
- * Monitors incoming file transfers and emits signals on events.
+ * LocalSend service for receiving/sending files via localsend-cli.
+ * Monitors incoming file transfers, scans for devices, and sends files.
  */
 Singleton {
     id: root
@@ -18,9 +18,15 @@ Singleton {
     property bool autoStart: Config.options?.localsend?.autoStart ?? false
     property string downloadPath: Config.options?.localsend?.downloadPath
     property bool showNotifications: Config.options?.localsend?.showNotifications ?? true
-    // Transfer state
+
+    // Receive state
     property var currentTransfer: null
     property list<var> pendingTransfers: []
+
+    // Send state
+    property list<var> droppedFiles: []
+    property list<var> discoveredDevices: []
+    property bool sending: false
 
     signal transferRequested(var transfer)
     signal transferStarted(var transfer)
@@ -28,9 +34,51 @@ Singleton {
     signal transferCancelled(var transfer)
     signal serverStarted()
     signal serverStopped()
+    signal sendCompleted()
+    signal sendFailed(string message)
 
     function isReady(): bool {
         return Config.ready
+    }
+
+    function addDroppedFile(fileUrl: string): void {
+        const cleanPath = fileUrl.toString().replace(/^file:\/\//, "")
+        const name = cleanPath.split("/").pop() || "unknown"
+        for (let i = 0; i < root.droppedFiles.length; i++) {
+            if (root.droppedFiles[i].path === cleanPath) return
+        }
+        const newList = root.droppedFiles.slice()
+        newList.push({ path: cleanPath, name: name, size: 0 })
+        root.droppedFiles = newList
+    }
+
+    function removeDroppedFile(index: int): void {
+        const newList = root.droppedFiles.slice()
+        newList.splice(index, 1)
+        root.droppedFiles = newList
+    }
+
+    function clearDroppedFiles(): void {
+        root.droppedFiles = []
+    }
+
+    function formatFileSize(bytes: int): string {
+        if (bytes < 1024) return bytes + " B"
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB"
+    }
+
+    function sendToDevice(deviceIp: string): void {
+        if (!root.available || root.sending || root.droppedFiles.length === 0) return
+        root.sending = true
+        const filePaths = root.droppedFiles.map(f => f.path)
+        sendProc.command = ["localsend-cli", "send", deviceIp].concat(filePaths).concat(["--json"])
+        sendProc.running = true
+    }
+
+    function cancelSend(): void {
+        sendProc.running = false
+        root.sending = false
     }
 
     // Check if localsend-cli is available
@@ -116,6 +164,43 @@ Singleton {
         }
     }
 
+    // Send process for sending files to a device
+    Process {
+        id: sendProc
+        running: false
+
+        stdout: SplitParser {
+            onRead: line => {
+                if (!line || line.trim().length === 0) return
+                console.log("[LocalSend] Send progress:", line)
+                try {
+                    const event = JSON.parse(line)
+                    if (event.event === "completed" || event.event === "saved" || event.event === "done") {
+                        root.clearDroppedFiles()
+                        root.sendCompleted()
+                    } else if (event.event === "cancelled" || event.error) {
+                        root.sendFailed(event.error || "Transfer cancelled")
+                    }
+                } catch (e) {
+                    console.log("[LocalSend] Failed to parse send line:", line, e)
+                }
+            }
+        }
+
+        stderr: SplitParser {
+            onRead: line => {
+                console.log("[LocalSend] Send stderr:", line)
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            root.sending = false
+            if (exitCode !== 0) {
+                root.sendFailed("Send process exited with code: " + exitCode)
+            }
+        }
+    }
+
     function handleLocalSendEvent(event: var): void {
         if (!event || !event.event) return
         console.log("[LocalSend] Event:", JSON.stringify(event))
@@ -126,7 +211,22 @@ Singleton {
                 break
 
             case "device":
-                console.log("[LocalSend] Device registered:", event.alias)
+                console.log("[LocalSend] Device registered:", event.alias, event.ip)
+                if (event.ip) {
+                    const newList = root.discoveredDevices.slice()
+                    let found = false
+                    for (let i = 0; i < newList.length; i++) {
+                        if (newList[i].ip === event.ip) { found = true; break }
+                    }
+                    if (!found) {
+                        newList.push({
+                            ip: event.ip,
+                            name: event.alias || event.name || "Unknown",
+                            port: event.port || 53317
+                        })
+                        root.discoveredDevices = newList
+                    }
+                }
                 break
 
             case "incoming":

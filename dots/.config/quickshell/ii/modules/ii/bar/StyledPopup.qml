@@ -123,7 +123,6 @@ LazyLoader {
             return null;
         }
         readonly property real heroHeight: heroItem ? heroItem.implicitHeight : 0
-        readonly property real totalContentHeight: root.contentItem ? root.contentItem.implicitHeight : 0
 
         NumberAnimation on animProgress {
             id: openAnim
@@ -145,7 +144,40 @@ LazyLoader {
             property bool isVertical: Config.options.bar.vertical
             property bool isBottom: Config.options.bar.bottom
             property int elevation: Appearance.sizes.elevationMargin
-            
+
+            // Debounced height — no auto-binding to targetHeight.
+            // Batches rapid layout changes before triggering smooth animation.
+            property real _commitHeight: 0
+            // Delayed enable to avoid opening animation transition glitch
+            property bool _heightReady: false
+
+            Timer {
+                id: heightCommit
+                interval: 32
+                repeat: false
+                onTriggered: popupBackground._commitHeight = popupBackground.targetHeight
+            }
+
+            onTargetHeightChanged: {
+                if (popupWindow.animProgress >= 1.0 && popupBackground._heightReady)
+                    heightCommit.restart()
+                else
+                    _commitHeight = targetHeight
+            }
+
+            Component.onCompleted: {
+                _commitHeight = targetHeight
+                Qt.callLater(function() { popupBackground._heightReady = true })
+            }
+
+            Behavior on _commitHeight {
+                enabled: popupBackground._heightReady
+                SmoothedAnimation {
+                    duration: 200
+                    easing: Easing.OutQuad
+                }
+            }
+
             anchors {
                 top: (!isVertical && !isBottom) ? parent.top : undefined
                 bottom: (!isVertical && isBottom) ? parent.bottom : undefined
@@ -163,8 +195,8 @@ LazyLoader {
             
             width: targetWidth
             height: {
-                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2) return targetHeight;
-                return (heroHeight + margin * 2) + (targetHeight - (heroHeight + margin * 2)) * popupWindow.animProgress;
+                if (!root.animate || !root.contentItem || !heroItem || targetHeight <= heroHeight + margin * 2) return _commitHeight;
+                return (heroHeight + margin * 2) + (_commitHeight - (heroHeight + margin * 2)) * popupWindow.animProgress;
             }
 
             color: Appearance.m3colors.m3surfaceContainer

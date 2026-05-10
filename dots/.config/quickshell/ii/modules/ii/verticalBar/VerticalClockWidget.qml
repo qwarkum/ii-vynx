@@ -34,9 +34,21 @@ Item {
                 font.pixelSize: modelData.match(/am|pm/i) ? 
                     Appearance.font.pixelSize.smaller // Smaller "am"/"pm" text
                     : Appearance.font.pixelSize.large
-                color: LocalSend.currentTransfer ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurface
+                color: dropArea.containsDrag ? Appearance.colors.colPrimary : LocalSend.currentTransfer ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurface
                 text: modelData.padStart(2, "0")
             }
+        }
+    }
+
+    DropArea {
+        id: dropArea
+        anchors.fill: parent
+        keys: ["text/uri-list"]
+        onDropped: (drop) => {
+            if (!drop.hasUrls) return
+            for (let i = 0; i < drop.urls.length; i++)
+                LocalSend.addDroppedFile(drop.urls[i])
+            drop.accept(Qt.CopyAction)
         }
     }
 

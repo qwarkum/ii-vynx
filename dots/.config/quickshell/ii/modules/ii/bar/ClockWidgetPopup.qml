@@ -52,7 +52,7 @@ StyledPopup {
         return Math.floor((secondsPassed / 86400) * 100)
     }
 
-    ColumnLayout {
+    contentItem: ColumnLayout {
         id: columnLayout
         anchors.centerIn: parent
         spacing: 12
@@ -74,7 +74,7 @@ StyledPopup {
             spacing: 12
 
             InfoPill {
-                visible: LocalSend.currentTransfer == null
+                visible: LocalSend.currentTransfer == null || LocalSend.droppedFiles.length > 0
                 text: root.formattedUptime
 
                 shapeContent: CustomIcon {
@@ -88,7 +88,7 @@ StyledPopup {
             }
 
             InfoPill {
-                visible: LocalSend.currentTransfer == null
+                visible: LocalSend.currentTransfer == null || LocalSend.droppedFiles.length > 0
                 textContent: Loader {
                     anchors.centerIn: parent
                     sourceComponent: TimerService.pomodoroRunning ? pomodoroText : (TimerService.stopwatchTime > 0 ? stopwatchText : timerOffText)
@@ -182,7 +182,7 @@ StyledPopup {
 
         Loader {
             Layout.fillWidth: true
-            sourceComponent: LocalSend.currentTransfer !== null ? transferCard : todoSection
+            sourceComponent: LocalSend.currentTransfer !== null ? transferCard : LocalSend.droppedFiles.length > 0 ? sendCard : todoSection
         }
 
         Component {
@@ -193,7 +193,7 @@ StyledPopup {
                 subtitle: root.todosSection
 
                 LoadingPlaceholder {
-                    Layout.preferredHeight: 120
+                    Layout.preferredHeight: 30
                     visible: root.todosEmpty
                     loading: false
                     emptyText: Translation.tr("No pending tasks")
@@ -204,6 +204,11 @@ StyledPopup {
         Component {
             id: transferCard
             LocalSendTransferCard {}
+        }
+
+        Component {
+            id: sendCard
+            LocalSendSendCard {}
         }
     }
 }
