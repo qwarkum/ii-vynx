@@ -757,5 +757,17 @@ ContentPage {
                 }
             }
         }
+            ContentSubsection {
+                title: Translation.tr("Performance & Layout")
+                ConfigSpinBox {
+                    icon: "timer"
+                    text: Translation.tr("Update interval (ms)")
+                    value: Config.options.bar.networkSpeed.updateInterval
+                    from: 100
+                    to: 5000
+                    stepSize: 100
+                    onValueChanged: { Config.options.bar.networkSpeed.updateInterval = value; }
+                }
+            }
     }
 }

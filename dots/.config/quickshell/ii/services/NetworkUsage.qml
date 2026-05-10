@@ -20,7 +20,7 @@ Singleton {
 
     Timer {
         id: timer
-        interval: 1000
+        interval: Config.options.bar.networkSpeed.updateInterval
         running: true
         repeat: true
         onTriggered: {

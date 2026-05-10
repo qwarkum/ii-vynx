@@ -100,8 +100,9 @@ StyledPopup {
             }
 
             InfoPill {
+                visible: !Config.options.bar.tooltips.compactPopups
                 icon: "data_usage"
-                text: Translation.tr("Total: ") + formatTotal(NetworkUsage.networkDownloadTotal + NetworkUsage.networkUploadTotal)
+                text: Translation.tr("Usage: ") + formatTotal(NetworkUsage.networkDownloadTotal + NetworkUsage.networkUploadTotal)
                 containerColor: Appearance.colors.colTertiaryContainer
                 shapeColor: Appearance.colors.colTertiary
                 symbolColor: Appearance.colors.colOnTertiary
