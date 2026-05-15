@@ -108,8 +108,12 @@ ContentPage {
                 ConfigSelectionArray {
                     currentValue: (Config.options.bar.bottom ? 1 : 0) | (Config.options.bar.vertical ? 2 : 0)
                     onSelected: newValue => {
+                        const newVertical = (newValue & 2) !== 0;
+                        if (newVertical && !Config.options.bar.vertical) {
+                            Config.options.bar.networkSpeed.displayMode = 5;
+                        }
                         Config.options.bar.bottom = (newValue & 1) !== 0;
-                        Config.options.bar.vertical = (newValue & 2) !== 0;
+                        Config.options.bar.vertical = newVertical;
                     }
                     options: [
                         {
