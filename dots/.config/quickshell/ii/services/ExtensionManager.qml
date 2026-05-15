@@ -181,6 +181,7 @@ Singleton {
             root.syncPluginsAdapter()
             root.loading = false
             root.extensionInstalled(extId)
+            root.loadExtensionServices(extId)
         } catch (e) {
             root.error = "Invalid extension.json: " + e
             root.loading = false
@@ -195,11 +196,27 @@ Singleton {
     }
 
     function finalizeUninstall(extId) {
+        root.unloadExtensionServices(extId)
         let ext = Object.assign({}, root.installedExtensions)
         delete ext[extId]
         root.installedExtensions = ext
         root.syncPluginsAdapter()
         root.extensionRemoved(extId)
+    }
+
+    function loadExtensionServices(extId) {
+        let ext = root.installedExtensions[extId]
+        if (!ext || !ext.contributes || !ext.contributes.services) return
+        let svcs = ext.contributes.services
+        for (let i = 0; i < svcs.length; i++) {
+            let svc = svcs[i]
+            if (!svc.id || !svc.qml) continue
+            ExtensionServices.ensure(extId, svc.id, ext.installedPath + "/" + svc.qml)
+        }
+    }
+
+    function unloadExtensionServices(extId) {
+        ExtensionServices.unloadExtension(extId)
     }
 
     function toggleExtension(extId, enabled) {
@@ -208,6 +225,13 @@ Singleton {
         let updated = Object.assign({}, root.installedExtensions[extId], { enabled: enabled })
         root.installedExtensions = Object.assign({}, root.installedExtensions, { [extId]: updated })
         root.syncPluginsAdapter()
+
+        if (enabled) {
+            root.loadExtensionServices(extId)
+        } else {
+            root.unloadExtensionServices(extId)
+        }
+
         root.extensionToggled(extId)
     }
 
@@ -302,6 +326,11 @@ Singleton {
             })
             root.installedExtensions = Object.assign({}, root.installedExtensions, { [extId]: updated })
             root.syncPluginsAdapter()
+            // Clear update state since we just updated
+            let states = Object.assign({}, root.updateStates)
+            delete states[extId]
+            root.updateStates = states
+            root.updateCheckDone(extId, false, "")
             // Re-enable the extension
             root.toggleExtension(extId, true)
         } catch (e) {
@@ -420,6 +449,11 @@ Singleton {
                 root.extensionSearchDone()
             }
             root.ready = true
+            for (let id in root.installedExtensions) {
+                if (root.installedExtensions[id].enabled) {
+                    root.loadExtensionServices(id)
+                }
+            }
         }
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) writeAdapter()

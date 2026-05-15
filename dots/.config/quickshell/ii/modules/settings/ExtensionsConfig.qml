@@ -376,7 +376,7 @@ ContentPage {
                                     color: Appearance.colors.colPrimary
                                 }
                                 StyledText {
-                                    visible: ext.repoUrl && !updateChecking && !updateAvailable && updateState.localHash
+                                    visible: ext.repoUrl && !updateChecking && !updateAvailable && !!updateState.localHash
                                     text: Translation.tr("Up to date")
                                     font.pixelSize: Appearance.font.pixelSize.smallest
                                     color: Appearance.colors.colSubtext
