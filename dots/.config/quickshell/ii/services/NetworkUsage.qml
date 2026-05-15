@@ -15,13 +15,15 @@ Singleton {
     
     property var previousNetworkStats: null
 
+    property int activeInstances: 0
+
     // Noise threshold: ignore speeds below 10 bytes/s to prevent flicker
     readonly property real noiseThreshold: 10
 
     Timer {
         id: timer
         interval: Config.options.bar.networkSpeed.updateInterval
-        running: true
+        running: activeInstances > 0
         repeat: true
         onTriggered: {
             fileNetDev.reload()

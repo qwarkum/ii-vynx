@@ -16,6 +16,9 @@ Item {
     readonly property int unitType: Config.options.bar.networkSpeed.unitType
     readonly property int iconPosition: Config.options.bar.networkSpeed.iconPosition
 
+    Component.onCompleted: NetworkUsage.activeInstances++
+    Component.onDestruction: NetworkUsage.activeInstances--
+
     // Shared formatting function for speed values
     function formatSpeed(bytesPerSecond) {
         var divisor = (unitType === 0) ? 1024 : 1000;
