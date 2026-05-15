@@ -100,10 +100,17 @@ Item {
         endRadius: rootItem.endRadius
         colBackground: rootItem.highlighted ? rootItem.colBackgroundHighlight : rootItem.colBackground
 
+        readonly property var _currentComp: {
+            BarComponentRegistry._extensionCompVersion
+            let builtin = compMap[modelData.id]
+            if (builtin) return builtin[vertical ? 1 : 0]
+            return BarComponentRegistry.getComponentForId(modelData.id, vertical)
+        }
+
         Loader {
             id: itemLoader
             active: true
-            sourceComponent: compMap[modelData.id][vertical ? 1 : 0]
+            sourceComponent: wrapper._currentComp
         }
     }
 

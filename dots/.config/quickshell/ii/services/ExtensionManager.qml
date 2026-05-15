@@ -358,8 +358,11 @@ Singleton {
                     title: item.title || item.name || "",
                     icon: item.icon || "",
                     identifier: item.identifier || item.id || "",
-                    component: item.component || "",
-                    fullPath: ext.installedPath + "/" + (item.component || "")
+                    component: item.component || item.qml || "",
+                    fullPath: ext.installedPath + "/" + (item.component || item.qml || ""),
+                    qml: item.qml || "",
+                    verticalQml: item.verticalQml || "",
+                    fullPathVertical: item.verticalQml ? (ext.installedPath + "/" + item.verticalQml) : ""
                 })
             }
         }
