@@ -18,6 +18,9 @@ Singleton {
     property var installedExtensions: ({})
     property var updateStates: ({})
     property var _updateQueue: ({}) // { extId: string, repoUrl: string, branch: string, step: string }
+    property list<string> recommendedExtensions: [
+        "ii-vynx-test-extension"
+    ]
 
     signal extensionSearchDone()
     signal extensionInstalled(string extId)
