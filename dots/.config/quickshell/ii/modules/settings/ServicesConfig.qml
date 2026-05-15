@@ -191,10 +191,13 @@ ContentPage {
     ContentSection {
         icon: "devices"
         title: Translation.tr("LocalSend")
+        tooltip: Translation.tr("You must have the localsend-cli installed\nCheck repo wiki for more information")
+
         ConfigSwitch {
             buttonIcon: "power_settings_new"
             text: Translation.tr("Auto-start server")
             checked: Config.options.localsend.autoStart
+            enabled: LocalSend.available
             onCheckedChanged: {
                 Config.options.localsend.autoStart = checked;
             }
@@ -207,6 +210,7 @@ ContentPage {
             buttonIcon: "notifications"
             text: Translation.tr("Show notifications")
             checked: Config.options.localsend.showNotifications
+            enabled: LocalSend.available
             onCheckedChanged: {
                 Config.options.localsend.showNotifications = checked;
             }
@@ -220,11 +224,9 @@ ContentPage {
             placeholderText: Translation.tr("Download path")
             text: Config.options.localsend.downloadPath
             wrapMode: TextEdit.Wrap
+            enabled: LocalSend.available
             onTextChanged: {
                 Config.options.localsend.downloadPath = text;
-            }
-            StyledToolTip {
-                text: Translation.tr("Directory where received files will be saved")
             }
         }
     }

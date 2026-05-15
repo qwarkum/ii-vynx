@@ -126,7 +126,7 @@ Singleton {
         notificationProc.command = [
             "notify-send",
             Translation.tr("LocalSend: Incoming Transfer"),
-            Translation.tr("From: %1\nFiles: %2 (%3)").arg(transfer.sender).arg(fileNames).arg(fileSizes),
+            Translation.tr("From: %1\nCheck the clock widget popup on the bar for more information").arg(transfer.sender),
             "-A", "accept=Kabul Et",
             "-A", "deny=Reddet",
             "-a", "LocalSend",
@@ -281,7 +281,7 @@ Singleton {
                     Quickshell.execDetached([
                         "notify-send",
                         Translation.tr("LocalSend: File Received"),
-                        Translation.tr("From: %1\n%2").arg(event.sender || "Unknown").arg(event.name || ""),
+                        Translation.tr("From: %1\nOutput path: %2").arg(event.sender || "Unknown").arg(event.path || "unknown path"),
                         "-a", "LocalSend",
                     ])
                 }
