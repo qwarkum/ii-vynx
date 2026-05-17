@@ -63,76 +63,30 @@ ContentPage {
         icon: "extension"
         title: Translation.tr("Extensions")
 
-        Rectangle {
+
+        ButtonGroup {
             Layout.fillWidth: true
-            implicitHeight: 50
-            radius: Appearance.rounding.full
-            color: Appearance.colors.colLayer1
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 4
-                spacing: 8
-
-                MaterialSymbol {
-                    text: "search"
-                    iconSize: 20
-                    color: Appearance.colors.colOnSecondaryContainer
-                }
-
-                TextField {
-                    id: searchField
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    placeholderText: Translation.tr("Search extensions...")
-                    placeholderTextColor: Appearance.colors.colSubtext
-                    color: Appearance.colors.colOnLayer1
-                    font {
-                        family: Appearance.font.family.main
-                        pixelSize: Appearance.font.pixelSize.small
-                        hintingPreference: Font.PreferFullHinting
-                        variableAxes: Appearance.font.variableAxes.main
-                    }
-                    renderType: Text.NativeRendering
-                    selectedTextColor: Appearance.colors.colOnSecondaryContainer
-                    selectionColor: Appearance.colors.colSecondaryContainer
-                    background: null
-                    verticalAlignment: Text.AlignVCenter
-                    leftPadding: 0
-                    rightPadding: 0
-                    topPadding: 0
-                    bottomPadding: 0
-
-                    onTextChanged: {
-                        page.searchText = text
-                        Qt.callLater(() => page.filter())
-                    }
-                }
-
-                RippleButton {
-                    implicitWidth: 42
-                    implicitHeight: 42
-                    buttonRadius: Appearance.rounding.full
-                    enabled: !ExtensionManager.loading
-                    MaterialSymbol {
-                        anchors.centerIn: parent
-                        text: ExtensionManager.loading ? "progress_activity" : "refresh"
-                        iconSize: 20
-                        color: ExtensionManager.loading ? Appearance.colors.colSubtext : Appearance.colors.colOnSecondaryContainer
-                    }
-                    onClicked: ExtensionManager.refreshAvailableExtensions()
-                    StyledToolTip { text: Translation.tr("Refresh from GitHub") }
+            GroupButtonWithTextField {
+                buttonIcon: "search"
+                buttonText: Translation.tr("Search extensions...")
+                Layout.fillWidth: true
+                
+                onTextChanged: text => {
+                    page.searchText = text
+                    Qt.callLater(() => page.filter())
                 }
             }
-        }
 
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            visible: ExtensionManager.loading
-            text: Translation.tr("Searching GitHub for extensions...")
-            color: Appearance.colors.colSubtext
-            font.pixelSize: Appearance.font.pixelSize.small
+            GroupButtonWithIcon {
+                Layout.fillWidth: true
+                baseHeight: parent.implicitHeight
+                extraWidth: 26
+                buttonIcon: ExtensionManager.loading ? "hourglass_bottom" : "refresh"
+                toggled: ExtensionManager.loading
+                onClicked: ExtensionManager.refreshAvailableExtensions()
+                StyledToolTip { text: Translation.tr("Refresh extension list") }
+            }
         }
 
         StyledText {
@@ -154,6 +108,14 @@ ContentPage {
             font.pixelSize: Appearance.font.pixelSize.normal
             font.weight: Font.Medium
             color: Appearance.colors.colOnLayer0
+        }
+
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            visible: ExtensionManager.loading
+            text: Translation.tr("Searching GitHub for extensions...")
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.small
         }
 
         ExtensionList {
