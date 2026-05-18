@@ -201,7 +201,16 @@ Singleton {
         installProc.exec(["git", "clone", "--depth", "1", repoUrl, dest])
     }
 
-    function registerInstalled(extId, dest, repoUrl, defaultBranch, htmlUrl, jsonText) {
+    function installLocalExtension(localPath) {
+        root.loading = true
+        root.error = ""
+        let resolvedPath = localPath.replace(/^~/, Directories.home).replace(/\/+$/, "")
+        localReader._pendingPath = resolvedPath
+        localReader.path = resolvedPath + "/extension.json"
+        localReader.reload()
+    }
+
+    function registerInstalled(extId, dest, repoUrl, defaultBranch, htmlUrl, jsonText, isLocal) {
         try {
             let extensionJson = JSON.parse(jsonText)
             let entry = {
@@ -218,6 +227,7 @@ Singleton {
                 repoUrl: repoUrl || "",
                 htmlUrl: htmlUrl || "",
                 defaultBranch: defaultBranch || "main",
+                isLocal: isLocal || false,
                 contributes: extensionJson.contributes || {}
             }
             root.installedExtensions = Object.assign({}, root.installedExtensions, { [extId]: entry })
@@ -234,6 +244,11 @@ Singleton {
     function uninstallExtension(extId) {
         let entry = root.installedExtensions[extId]
         if (!entry) return
+        if (entry.isLocal) {
+            // Local path extension — just remove from registry, keep files
+            root.finalizeUninstall(extId)
+            return
+        }
         removeProc._pendingExtId = extId
         removeProc.exec(["rm", "-rf", entry.installedPath])
     }
@@ -595,6 +610,21 @@ Singleton {
         onLoaded: root.registerInstalled(installReader._pendingExtId, installReader._pendingDest, installReader._pendingRepoUrl, installReader._pendingBranch, installReader._pendingHtmlUrl, installReader.text())
         onLoadFailed: {
             root.error = "Installed extension has no extension.json"
+            root.loading = false
+        }
+    }
+
+    FileView {
+        id: localReader
+        property string _pendingPath: ""
+        onLoaded: {
+            let path = localReader._pendingPath
+            let parts = path.replace(/\/$/, "").split("/")
+            let extId = parts[parts.length - 1]
+            root.registerInstalled(extId, path, "", "", "", localReader.text(), true)
+        }
+        onLoadFailed: {
+            root.error = "Local extension has no extension.json"
             root.loading = false
         }
     }

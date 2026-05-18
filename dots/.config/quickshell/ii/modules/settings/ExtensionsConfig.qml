@@ -18,14 +18,22 @@ ContentPage {
     property bool showCustomUrlInput: false
 
     function installFromUrl() {
-        console.log("Installing from URL: " + customUrlField.textFieldText)
-        let url = customUrlField.textFieldText.trim()
-        if (!url) return
-        // Extract repo name from URL: https://github.com/owner/repo or https://github.com/owner/repo.git
-        let parts = url.replace(/\.git$/, "").split("/")
-        let repoName = parts[parts.length - 1]
-        if (!repoName) return
-        ExtensionManager.installExtension(url, repoName, "main", url)
+        let input = customUrlField.textFieldText.trim()
+        if (!input) return
+
+        // Detect if input is a URL (http/https/git) or a local path
+        if (input.match(/^(https?:\/\/|git@|git:\/\/)/)) {
+            // URL — install via git clone
+            let url = input
+            let parts = url.replace(/\.git$/, "").split("/")
+            let repoName = parts[parts.length - 1]
+            if (!repoName) return
+            ExtensionManager.installExtension(url, repoName, "main", url)
+        } else {
+            // Local path — register directly
+            ExtensionManager.installLocalExtension(input)
+        }
+
         page.showCustomUrlInput = false
         customUrlField.textFieldText = ""
     }
@@ -89,7 +97,7 @@ ContentPage {
                 extraWidth: 26
                 onClicked: page.showCustomUrlInput = !page.showCustomUrlInput
                 toggled: page.showCustomUrlInput
-                StyledToolTip { text: Translation.tr("Install from custom URL") }
+                StyledToolTip { text: Translation.tr("Install from custom URL (for developers)") }
             }
 
             GroupButtonWithTextField {
@@ -125,8 +133,8 @@ ContentPage {
 
             GroupButtonWithTextField {
                 id: customUrlField
-                buttonIcon: "add_link"
-                buttonText: Translation.tr("https://github.com/owner/repo")
+                buttonIcon: "add"
+                buttonText: Translation.tr("GitHub URL or local path")
                 Layout.fillWidth: true
                 
                 onAccepted: page.installFromUrl()
