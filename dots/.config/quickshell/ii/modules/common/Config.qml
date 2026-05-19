@@ -259,6 +259,7 @@ Singleton {
                     }
                 }
                 property bool animateWallpaperChanges: true
+                property string transitionType: "radial"
                 property string wallpaperPath: ""
                 property string thumbnailPath: ""
                 property bool hideWhenFullscreen: true
