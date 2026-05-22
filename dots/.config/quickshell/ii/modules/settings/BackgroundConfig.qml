@@ -65,6 +65,63 @@ ContentPage {
                 Config.options.background.animateWallpaperChanges = checked;
             }
         }
+        
+        ContentSubsection {
+            visible: Config.options.background.animateWallpaperChanges
+            title: Translation.tr("Wallpaper transition style")
+            ConfigSelectionArray {
+                currentValue: Config.options.background.transitionType
+                onSelected: newValue => {
+                    Config.options.background.transitionType = newValue;
+                }
+                options: [
+                    {
+                        displayName: Translation.tr("Radial Wipe"),
+                        icon: "circle",
+                        value: "radial",
+                        tooltip: Translation.tr("Expands a circle outward from the center to reveal the new wallpaper")
+                    },
+                    {
+                        displayName: Translation.tr("Crossfade"),
+                        icon: "blur_on",
+                        value: "crossfade",
+                        tooltip: Translation.tr("Smoothly blends the old wallpaper into the new one")
+                    },
+                    {
+                        displayName: Translation.tr("Linear Wipe"),
+                        icon: "swap_horiz",
+                        value: "wipe",
+                        tooltip: Translation.tr("Wipes the screen horizontally to reveal the new wallpaper")
+                    },
+                    {
+                        displayName: Translation.tr("Diamond Wipe"),
+                        icon: "diamond",
+                        value: "diamond",
+                        tooltip: Translation.tr("Expands a 4-sided diamond outward from the center to reveal the new wallpaper")
+                    },
+                    {
+                        displayName: Translation.tr("Slash Wipe"),
+                        icon: "timeline",
+                        value: "slash",
+                        tooltip: Translation.tr("Expands a 45-degree slash line outward to reveal the new wallpaper")
+                    }
+                ]
+            }
+
+            ConfigSpinBox {
+                visible: Config.options.background.transitionType === "wipe"
+                Layout.fillWidth: true
+                icon: "rotate_right"
+                text: Translation.tr("Wipe Angle (0° starts from left side)")
+                value: Config.options.background.wipeAngle
+                from: 0
+                to: 359
+                stepSize: 1
+                onValueChanged: {
+                    Config.options.background.wipeAngle = value;
+                }
+            }
+        }
     }
 
     ContentSection {

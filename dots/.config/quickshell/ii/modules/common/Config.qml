@@ -181,6 +181,7 @@ Singleton {
                 property string terminal: "kitty -1" // This is only for shell actions
                 property string update: "kitty -1 --hold=yes fish -i -c 'pkexec pacman -Syu'"
                 property string volumeMixer: `~/.config/hypr/hyprland/scripts/launch_first_available.sh "pavucontrol-qt" "pavucontrol"`
+                property list<var> bluetoothDeviceImages: []
             }
 
             property JsonObject background: JsonObject {
@@ -259,6 +260,8 @@ Singleton {
                     }
                 }
                 property bool animateWallpaperChanges: true
+                property string transitionType: "radial"
+                property int wipeAngle: 0
                 property string wallpaperPath: ""
                 property string thumbnailPath: ""
                 property bool hideWhenFullscreen: true
@@ -423,10 +426,20 @@ Singleton {
                     property bool clickToShow: false
                     property bool compactPopups: false
                     property bool showSwap: false
+                    property bool enableBluetoothConnectionPopup: true
+                    property string bluetoothDevicesLayout: "classic" // Options: classic, expressive
                 }
                 property JsonObject sizes: JsonObject {
                     property int height: 40 // horizontal mode
                     property int width: 46 // vertical mode
+                }
+
+                property JsonObject networkSpeed: JsonObject {
+                    property int displayMode: 0 // 0: total, 1: download, 2: upload, 3: both, 4: icon, 5: rotated
+                    property bool showIcons: true
+                    property int unitType: 0 // 0: Binary (IEC), 1: Metric (SI), 2: Bits
+                    property int iconPosition: 0 // 0: Left, 1: Right
+                    property int updateInterval: 1000 // ms
                 }
             }
 
@@ -452,6 +465,11 @@ Singleton {
                 property bool splitButtons: false
                 property bool useMouseSymbol: false
                 property bool useFnSymbol: false
+                property bool enableGmail: true
+                property bool enableTimetable: true
+                property bool enablePeriodicTable: false
+                property bool enableCommands: true
+                property bool commandsTagsSidebar: false
                 property JsonObject fontSize: JsonObject {
                     property int key: Appearance.font.pixelSize.smaller
                     property int comment: Appearance.font.pixelSize.smaller
@@ -558,6 +576,7 @@ Singleton {
 
             property JsonObject notifications: JsonObject {
                 property int timeout: 7000
+                property int clearOlderThanHours: 6 // Auto-clear notifications older than this many hours (0 to disable)
             }
 
             property JsonObject osd: JsonObject {
