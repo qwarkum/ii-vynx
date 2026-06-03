@@ -9,53 +9,30 @@ StyledPopup {
     id: root
     popupRadius: Appearance.rounding.large
 
-    // Unit-aware formatting that respects user preferences (mirrors NetworkSpeed.qml)
-    readonly property int unitType: Config.options.bar.networkSpeed.unitType
-
     function formatSpeed(bytesPerSecond) {
-        var divisor = (unitType === 0) ? 1024 : 1000;
-        var value = bytesPerSecond;
-        var suffix = "/s";
-        var baseUnit = "B";
-        
-        if (unitType === 2) {
-            value = bytesPerSecond * 8;
-            baseUnit = "b";
-        }
+        var bits = bytesPerSecond * 8;
+        var suffix = "bps";
 
-        if (value < divisor) {
-            return value.toFixed(0) + " " + baseUnit + suffix;
-        } else if (value < divisor * divisor) {
-            var prefix = (unitType === 0) ? "Ki" : (unitType === 1 ? "K" : "k");
-            return (value / divisor).toFixed(1) + " " + prefix + baseUnit + suffix;
-        } else if (value < divisor * divisor * divisor) {
-            var prefix = (unitType === 0) ? "Mi" : "M";
-            return (value / (divisor * divisor)).toFixed(1) + " " + prefix + baseUnit + suffix;
+        if (bits < 1000) {
+            return bits.toFixed(0) + " " + suffix;
+        } else if (bits < 1000000) {
+            return (bits / 1000).toFixed(1) + " K" + suffix;
+        } else if (bits < 1000000000) {
+            return (bits / 1000000).toFixed(1) + " M" + suffix;
         } else {
-            var prefix = (unitType === 0) ? "Gi" : "G";
-            return (value / (divisor * divisor * divisor)).toFixed(1) + " " + prefix + baseUnit + suffix;
+            return (bits / 1000000000).toFixed(1) + " G" + suffix;
         }
     }
 
     function formatTotal(bytes) {
-        var divisor = (unitType === 0) ? 1024 : 1000;
-        var value = bytes;
-        var baseUnit = "B";
+        var bits = bytes * 8;
 
-        if (unitType === 2) {
-            value = bytes * 8;
-            baseUnit = "b";
-        }
-
-        if (value < divisor * divisor) {
-            var prefix = (unitType === 0) ? "Ki" : (unitType === 1 ? "K" : "k");
-            return (value / divisor).toFixed(1) + " " + prefix + baseUnit;
-        } else if (value < divisor * divisor * divisor) {
-            var prefix = (unitType === 0) ? "Mi" : "M";
-            return (value / (divisor * divisor)).toFixed(1) + " " + prefix + baseUnit;
+        if (bits < 1000000) {
+            return (bits / 1000).toFixed(1) + " Kb";
+        } else if (bits < 1000000000) {
+            return (bits / 1000000).toFixed(1) + " Mb";
         } else {
-            var prefix = (unitType === 0) ? "Gi" : "G";
-            return (value / (divisor * divisor * divisor)).toFixed(1) + " " + prefix + baseUnit;
+            return (bits / 1000000000).toFixed(1) + " Gb";
         }
     }
 

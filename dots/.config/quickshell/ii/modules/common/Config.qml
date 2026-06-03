@@ -430,9 +430,8 @@ Singleton {
                 }
 
                 property JsonObject networkSpeed: JsonObject {
-                    property int displayMode: 0 // 0: total, 1: download, 2: upload, 3: both, 4: icon, 5: rotated
+                    property int displayMode: 0 // 0: total, 1: download, 2: upload, 3: both, 4: icon
                     property bool showIcons: true
-                    property int unitType: 0 // 0: Binary (IEC), 1: Metric (SI), 2: Bits
                     property int iconPosition: 0 // 0: Left, 1: Right
                     property int updateInterval: 1000 // ms
                     property bool autoHide: true
