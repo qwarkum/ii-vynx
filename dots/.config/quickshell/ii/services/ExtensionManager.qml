@@ -29,6 +29,12 @@ Singleton {
         "ii-vynx-test-extension"
     ]
 
+    property bool auditDatabaseReady: false
+    property var cachedAuditDb: ({trustedExtensions: [], blockedExtensions: []})
+    property var _blockedIds: ({})
+    property var _trustedMap: ({})
+    property int _auditDbVersion: 0
+
     onAvailableExtensionsChanged: { root.refreshExtensions() }
     onInstalledExtensionsChanged: { root.refreshExtensions() }
     onUpdateStatesChanged: { root.refreshExtensions() }
@@ -159,7 +165,7 @@ Singleton {
                 extensionJsonError: null
             }))
             root.saveSearchCache(repos)
-            root.availableExtensions = repos
+            root.availableExtensions = repos.filter(r => !root._blockedIds[r.name])
             root.extensionSearchDone()
             root.startExtensionJsonFetchAll()
         } catch (e) {
@@ -314,6 +320,16 @@ Singleton {
     }
 
     function registerInstalled(extId, dest, repoUrl, defaultBranch, htmlUrl, jsonText, isLocal, isCustomUrl) {
+        // Check if extension is blocked
+        if (root._blockedIds[extId]) {
+            let reason = root._blockedIds[extId]
+            root.error = reason !== true
+                ? "Extension blocked: " + reason
+                : "This extension is blocked and cannot be installed"
+            root.loading = false
+            return
+        }
+
         try {
             let extensionJson = JSON.parse(jsonText)
             let entry = {
@@ -611,6 +627,40 @@ Singleton {
         onTriggered: root._processExtensionJsonQueue()
     }
 
+    // ── Audit database ──
+
+    function fetchAuditDatabase() {
+        auditFetchProc.exec(["curl", "-s", "--connect-timeout", "5",
+            "https://raw.githubusercontent.com/vaguesyntax/vynx-extension-audit/refs/heads/main/extension-database.json"])
+    }
+
+    function _processAuditDatabase(db) {
+        root.cachedAuditDb = db
+        let blocked = {}
+        let trusted = {}
+        let blockedList = db["blocked-extensions"] || []
+        for (let i = 0; i < blockedList.length; i++) {
+            blocked[blockedList[i]["extension-id"]] = blockedList[i].reason || true
+        }
+        let trustedList = db["trusted-extensions"] || []
+        for (let i = 0; i < trustedList.length; i++) {
+            trusted[trustedList[i]["extension-id"]] = { trustedCommit: trustedList[i].trustedCommit }
+        }
+        root._blockedIds = blocked
+        root._trustedMap = trusted
+        root.auditDatabaseReady = true
+
+        root.availableExtensions = root.availableExtensions.filter(r => !blocked[r.name])
+
+        root._auditDbVersion++
+    }
+
+    function getExtensionAuditState(extId) {
+        if (root._blockedIds[extId]) return "blocked"
+        if (root._trustedMap[extId]) return "trusted"
+        return "unaudited"
+    }
+
     function getContributionPoint(pointName) {
         let result = []
         for (let id in root.installedExtensions) {
@@ -742,6 +792,33 @@ Singleton {
         }
     }
 
+    // ── Audit database ──
+
+    function _processAuditDatabaseFetch(jsonText) {
+        try {
+            let db = JSON.parse(jsonText)
+            root._processAuditDatabase(db)
+        } catch (e) {
+            console.warn("Audit DB fetch parse failed:", e)
+        }
+    }
+
+    Process {
+        id: auditFetchProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (this.text && this.text.length > 0) {
+                    root._processAuditDatabaseFetch(this.text)
+                }
+            }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (this.text) console.warn("Audit DB fetch error:", this.text)
+            }
+        }
+    }
+
     // ── File persistence ──
 
     FileView {
@@ -760,6 +837,8 @@ Singleton {
                 root.extensionSearchDone()
                 root.startExtensionJsonFetchAll()
             }
+            root.fetchAuditDatabase()
+
             root.ready = true
             for (let id in root.installedExtensions) {
                 root.applyExtensionConfigDefaults(id)
@@ -770,6 +849,7 @@ Singleton {
         }
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) writeAdapter()
+            root.fetchAuditDatabase()
             root.ready = true
         }
 

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import "."
 Item {
     id: root
     required property var modelData
@@ -38,6 +39,11 @@ Item {
         }
         return false
     }
+    readonly property string _auditState: {
+        ExtensionManager._auditDbVersion
+        if (!ExtensionManager.auditDatabaseReady || !ext.hasExtensionJson) return ""
+        return ExtensionManager.getExtensionAuditState(ext.name)
+    }
 
     property real topRadius: {
         if (listCount == 1 || index == 0) return Appearance.rounding.large
@@ -68,12 +74,22 @@ Item {
                 Layout.preferredWidth: 60
                 Layout.preferredHeight: 60
                 shapeString: ext.shapeString || ""
-                color: isEnabled ? Appearance.colors.colPrimaryContainer : Appearance.colors.colLayer3
+                color: isEnabled ? Appearance.colors.colPrimaryContainer : ExtensionManager.recommendedExtensions.includes(ext.name) ? Appearance.colors.colTertiary : Appearance.colors.colLayer3
+                
+                HoverHandler {
+                    id: hover
+                }
+
+                StyledToolTip {
+                    extraVisibleCondition: hover.hovered && ExtensionManager.recommendedExtensions.includes(ext.name)
+                    text: ExtensionManager.recommendedExtensions.includes(ext.name) ? Translation.tr("Recommended by the ii-vynx developer based on user feedback") : ""
+                }
+
                 MaterialSymbol {
                     anchors.centerIn: parent
                     text: ext.icon || "extension"
                     iconSize: 28
-                    color: isEnabled ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+                    color: isEnabled ? Appearance.colors.colOnPrimaryContainer : ExtensionManager.recommendedExtensions.includes(ext.name) ? Appearance.colors.colOnTertiary : Appearance.colors.colSubtext
                 }
             }
 
@@ -92,87 +108,28 @@ Item {
                         color: Appearance.colors.colOnLayer0
                         elide: Text.ElideRight
                     }
-                    Rectangle {
+                    ExtensionBadge {
+                        label: Translation.tr("Official")
+                        tooltip: Translation.tr("Created by the ii-vynx developer")
                         visible: ext.repoUrl && ext.repoUrl.includes("vaguesyntax")
-                        radius: Appearance.rounding.full
-                        color: Appearance.colors.colSecondaryContainer
-                        implicitWidth: childrenRect.width + 20
-                        implicitHeight: childrenRect.height + 8
-                        StyledText {
-                            x: 3; y: 1
-                            text: Translation.tr("Official")
-                            font.pixelSize: Appearance.font.pixelSize.smallest
-                            color: Appearance.colors.colOnSecondaryContainer
-                            anchors.centerIn: parent
-                        }
-                        HoverHandler {
-                            id: hoverOff
-                        }
-                        StyledToolTip { 
-                            extraVisibleCondition: hoverOff.hovered
-                            text: Translation.tr("Created by the ii-vynx developer") 
-                        }
                     }
-                    Rectangle {
+                    ExtensionBadge {
+                        icon: "link"
+                        tooltip: Translation.tr("Custom URL extension")
                         visible: isCustomUrlExtension
-                        radius: Appearance.rounding.full
-                        color: Appearance.colors.colSecondaryContainer
-                        implicitWidth: childrenRect.width + 20
-                        implicitHeight: childrenRect.height + 8
-                        MaterialSymbol {
-                            text: "link"
-                            iconSize: 14
-                            color: Appearance.colors.colOnSecondaryContainer
-                            anchors.centerIn: parent
-                        }
-                        HoverHandler {
-                            id: hoverCustomUrl
-                        }
-                        StyledToolTip { 
-                            extraVisibleCondition: hoverCustomUrl.hovered
-                            text: Translation.tr("Custom URL extension") 
-                        }
                     }
-                    Rectangle {
+                    ExtensionBadge {
+                        icon: "folder"
+                        tooltip: Translation.tr("Local path extension")
                         visible: isLocalExtension
-                        radius: Appearance.rounding.full
-                        color: Appearance.colors.colSecondaryContainer
-                        implicitWidth: childrenRect.width + 20
-                        implicitHeight: childrenRect.height + 8
-                        MaterialSymbol {
-                            text: "folder"
-                            iconSize: 14
-                            color: Appearance.colors.colOnSecondaryContainer
-                            anchors.centerIn: parent
-                        }
-                        HoverHandler {
-                            id: hoverLocal
-                        }
-                        StyledToolTip { 
-                            extraVisibleCondition: hoverLocal.hovered
-                            text: Translation.tr("Local path extension") 
-                        }
                     }
-                    Rectangle {
-                        visible: ExtensionManager.recommendedExtensions.includes(ext.name)
-                        radius: Appearance.rounding.full
-                        color: Appearance.colors.colTertiaryContainer
-                        implicitWidth: childrenRect.width + 20
-                        implicitHeight: childrenRect.height + 8
-                        StyledText {
-                            x: 3; y: 1
-                            text: Translation.tr("Recommended")
-                            font.pixelSize: Appearance.font.pixelSize.smallest
-                            color: Appearance.colors.colOnTertiaryContainer
-                            anchors.centerIn: parent
-                        }
-                        HoverHandler {
-                            id: hoverRec
-                        }
-                        StyledToolTip { 
-                            extraVisibleCondition: hoverRec.hovered
-                            text: Translation.tr("Recommended by the ii-vynx developer based on user feedback") 
-                        }
+                    ExtensionBadge {
+                        extraWidth: 14
+                        icon: root._auditState === "trusted" ? "verified" : "help"
+                        bgColor: root._auditState === "trusted" ? Appearance.m3colors.m3successContainer : Appearance.colors.colTertiaryContainer
+                        fgColor: root._auditState === "trusted" ? Appearance.m3colors.m3success : Appearance.colors.colTertiary
+                        tooltip: root._auditState === "trusted" ? Translation.tr("This extension is trsuted. You can safely use it") : Translation.tr("This extension has not been audited yet. Be cautious when installing it.")
+                        visible: root._auditState.length > 0 && root._auditState !== "blocked"
                     }
                 }
 
