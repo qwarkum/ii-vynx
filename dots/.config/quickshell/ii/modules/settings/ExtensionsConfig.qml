@@ -90,7 +90,6 @@ ContentPage {
     ContentSection {
         icon: "extension"
         title: Translation.tr("Extensions (beta)")
-        tooltip: Translation.tr("Extension system is still on beta, expect some bugs. PLEASE report any issues you encounter.")
 
         ButtonGroup {
             Layout.topMargin: 10
@@ -153,6 +152,11 @@ ContentPage {
                 onClicked: page.installFromUrl()
                 StyledToolTip { text: Translation.tr("Install a custom extension") }
             }
+        }
+
+        NoticeBox {
+            Layout.fillWidth: true
+            text: Translation.tr("Extension system is in early beta stage. Please be cautious when installing extensions from untrusted sources and report any issues you encounter.")
         }
 
         StyledText {
