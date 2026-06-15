@@ -40,7 +40,7 @@ Item {
         descriptionHorizontalAlignment: Text.AlignHCenter
         
         triggerAnimationOn: GlobalStates.dashboardPanelOpen
-        rotateToRight: !(GlobalStates.effectiveRightOpen && GlobalStates.dashboardPanelOpen)
+        rotateToRight: GlobalStates.dashboardOnLeft
     }
 
     ButtonGroup {

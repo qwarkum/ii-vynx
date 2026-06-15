@@ -219,7 +219,7 @@ Item {
                 shape: MaterialShape.Shape.Bun
 
                 triggerAnimationOn: GlobalStates.policiesPanelOpen
-                rotateToRight: (GlobalStates.effectiveLeftOpen && GlobalStates.policiesPanelOpen)
+                rotateToRight: GlobalStates.policiesOnLeft
             }
 
             ScrollToBottomButton {
