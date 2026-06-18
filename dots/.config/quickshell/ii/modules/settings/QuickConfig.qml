@@ -16,7 +16,29 @@ ContentPage {
     interactive: false
 
     property bool allowHeavyLoad: false
-    Component.onCompleted: Qt.callLater(() => page.allowHeavyLoad = true)
+    property ListModel favouritesCarouselModel: ListModel {}
+
+    function refreshFavouritesCarousel() {
+        favouritesCarouselModel.clear()
+        const favs = Persistent.states.wallpaper.favourites
+        for (let i = 0; i < favs.length; i++) {
+            const path = favs[i]
+            const fileName = path.split('/').pop()
+            favouritesCarouselModel.append({ filePath: path, fileName: fileName })
+        }
+    }
+
+    Component.onCompleted: Qt.callLater(() => {
+        page.allowHeavyLoad = true
+        page.refreshFavouritesCarousel()
+    })
+
+    Connections {
+        target: Persistent.states.wallpaper
+        function onFavouritesChanged() {
+            page.refreshFavouritesCarousel()
+        }
+    }
 
     Process {
         id: randomWallProc
@@ -208,7 +230,6 @@ ContentPage {
                 Config.options.appearance.transparency.enable = checked;
             }
         }
-        
     }
 
     
